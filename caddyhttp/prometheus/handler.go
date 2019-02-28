@@ -1,16 +1,113 @@
 package prometheus
 
 import (
+	"context"
+	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/journeymidnight/yig-front-caddy/caddyhttp/circuitbreak"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 )
 
+type Cache interface {
+	Put(key interface{}, value interface{}, lifeTime time.Duration) error
+	Get(key interface{}) interface{}
+}
+
+type Item struct {
+	Value      interface{}
+	createTime time.Time
+	lifeTime   time.Duration
+}
+
+type MemoryCache struct {
+	syncMap sync.Map
+	sync.RWMutex
+	duration time.Duration
+}
+
+func (mc *MemoryCache) Put(key interface{}, value interface{}, lifeTime time.Duration) error {
+	mc.syncMap.Store(key, Item{
+		Value:      value,
+		createTime: time.Now(),
+		lifeTime:   lifeTime,
+	})
+	return nil
+}
+
+func (mc *MemoryCache) Get(key interface{}) string {
+	if e, ok := mc.syncMap.Load(key); ok {
+		return e.(Item).Value.(string)
+	}
+	return ""
+}
+
+func (e *Item) isExpire() bool {
+	if e.lifeTime == 0 {
+		return false
+	}
+	return time.Now().Sub(e.createTime) > e.lifeTime
+}
+
+func (mc *MemoryCache) StartTimerGC() error {
+	go mc.checkAndClearExpire()
+	return nil
+}
+
+//Detects and clears expired elements
+func (mc *MemoryCache) checkAndClearExpire() {
+	for {
+		<-time.After(mc.duration)
+		if keys := mc.expireKeys(); len(keys) != 0 {
+			mc.clearItems(keys)
+		}
+	}
+}
+
+//Use expired elements to clean up the cache
+func (mc *MemoryCache) clearItems(keys []interface{}) {
+	mc.Lock()
+	defer mc.Unlock()
+	for _, key := range keys {
+		mc.syncMap.Delete(key)
+	}
+}
+
+//Gets the expired key
+func (mc *MemoryCache) expireKeys() (keys []interface{}) {
+	mc.RLock()
+	defer mc.RUnlock()
+	mc.syncMap.Range(func(key, value interface{}) bool {
+		item := value.(Item)
+		if item.isExpire() {
+			keys = append(keys, key)
+		}
+		return true
+	})
+	return
+}
+
+var mc = MemoryCache{
+	sync.Map{},
+	sync.RWMutex{},
+	0,
+}
+
 func (m *Metrics) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
+	checkTimeCount, err := strconv.Atoi(m.checkTime)
+	checkTime := time.Duration(checkTimeCount) * time.Hour
+	mc.duration = checkTime
+
+	lifeTimeCount, err := strconv.Atoi(m.lifeTime)
+	lifeTime := time.Duration(lifeTimeCount) * time.Second
+
 	next := m.next
 
 	hostname := m.hostname
@@ -79,7 +176,15 @@ func (m *Metrics) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error)
 		isInternal = "y"
 	}
 
-	labelValues = append(labelValues, bucketName, r.Method, statusStr, isInternal)
+	bucketOwner := mc.Get(bucketName)
+	if bucketOwner == "" {
+		bucketOwner, err = getBucketOwnerFromRequest(bucketName, m.yigUrl, time.Duration(lifeTime))
+		if strings.TrimSpace(bucketOwner) == "" {
+			bucketOwner = "-"
+		}
+	}
+
+	labelValues = append(labelValues, bucketName, r.Method, statusStr, isInternal, bucketOwner)
 	countTotal.WithLabelValues(labelValues...).Inc()
 	bytesTotal.WithLabelValues(labelValues...).Add(float64(rw.Size()))
 
@@ -132,6 +237,91 @@ func getBucketAndObjectInfoFromRequest(s3Endpoint string, r *http.Request) (buck
 		}
 	}
 	return
+}
+
+func getBucketOwnerFromRequest(bucketName string, yigUrl string, lifeTime time.Duration) (bucketOwner string, err error) {
+	client := &http.Client{}
+	if bucketName == "-" {
+		return "", nil
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"bucket": bucketName,
+	})
+
+	tokenString, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		return "", err
+	}
+
+	request, err := http.NewRequest("GET", yigUrl, nil)
+	request.Header.Set("Authorization", "Bearer "+tokenString)
+
+	AdminServiceCircuit := circuitbreak.NewAdminServiceCircuit()
+	response := new(http.Response)
+	circuitErr := AdminServiceCircuit.Execute(
+		context.Background(),
+		func(ctx context.Context) error {
+			response, err = client.Do(request)
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+		nil,
+	)
+	if circuitErr != nil {
+		return "", err
+	}
+
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var respBody RespBody
+	json.Unmarshal(body, &respBody)
+	bucketOwner = respBody.Bucket.OwnerId
+
+	//mc.Put(bucketName, bucketOwner, time.Duration(lifeTime))
+	mc.Put(bucketName, bucketOwner, lifeTime)
+	return bucketOwner, nil
+}
+
+type RespBody struct {
+	Bucket Bucket `json:"Bucket"`
+}
+type Bucket struct {
+	Name       string `json:"Name"`
+	CreateTime string `json:"CreateTime"`
+	OwnerId    string `json:"OwnerId"`
+	CORS       CORS   `json:"CORS"`
+	ACL        ACL    `json:"ACL"`
+	LC         LC     `json:"LC"`
+	Policy     Policy `json:"Policy"`
+	Versioning string `json:"Versioning"`
+	Usage      string `json:"Usage"`
+}
+type CORS struct {
+	CorsRules string `json:"CorsRules"`
+}
+type ACL struct {
+	CannedAcl string `json:"CannedAcl"`
+}
+type LC struct {
+	XMLName XMLName `json:"XMLName"`
+	Rule    string  `json:"Rule"`
+}
+
+type XMLName struct {
+	Space string `json:"Space"`
+	Local string `json:"Local"`
+}
+
+type Policy struct {
+	Version   string `json:"Version"`
+	Statement string `json:"Statement"`
 }
 
 // A timedResponseWriter tracks the time when the first response write

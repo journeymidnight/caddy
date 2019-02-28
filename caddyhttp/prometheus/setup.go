@@ -1,15 +1,14 @@
 package prometheus
 
 import (
-	"log"
-	"net/http"
-	"os"
-	"sync"
-
 	"github.com/journeymidnight/yig-front-caddy"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"log"
+	"net/http"
+	"os"
+	"sync"
 )
 
 func init() {
@@ -34,6 +33,10 @@ type Metrics struct {
 	hostname     string
 	path         string
 	s3Endpoint   string
+	yigUrl       string
+	lifeTime     string
+	checkTime    string
+	//ak           string
 
 	// subsystem?
 	once sync.Once
@@ -173,6 +176,24 @@ func parse(c *caddy.Controller) (*Metrics, error) {
 					return nil, c.Err("prometheus: address and use_caddy_addr options may not be used together")
 				}
 				metrics.useCaddyAddr = true
+			case "yig_url":
+				args = c.RemainingArgs()
+				if len(args) != 1 {
+					return nil, c.ArgErr()
+				}
+				metrics.yigUrl = args[0]
+			case "life_time":
+				args = c.RemainingArgs()
+				if len(args) != 1 {
+					return nil, c.ArgErr()
+				}
+				metrics.lifeTime = args[0]
+			case "check_time":
+				args = c.RemainingArgs()
+				if len(args) != 1 {
+					return nil, c.ArgErr()
+				}
+				metrics.checkTime = args[0]
 			default:
 				return nil, c.Errf("prometheus: unknown item: %s", c.Val())
 			}
