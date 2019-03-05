@@ -1,0 +1,13 @@
+compress
+/var/log/caddy/access.log
+/var/log/caddy/err.log
+{
+    daily
+    rotate 7
+    missingok
+    compress
+    minsize 100k
+    copytruncate
+}
+
+
