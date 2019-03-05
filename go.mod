@@ -40,7 +40,7 @@ require (
 	github.com/miekg/dns v0.0.0-20170721150254-0f3adef2e220
 	github.com/naoina/go-stringutil v0.1.0
 	github.com/naoina/toml v0.1.1
-	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/client_golang latest
 	github.com/russross/blackfriday v0.0.0-20170610170232-067529f716f4
 	github.com/xenolf/lego v0.0.0-20181204200439-4e842a5eb6dc
 	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25

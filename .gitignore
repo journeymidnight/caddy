@@ -11,10 +11,6 @@ dist/release/
 error.log
 access.log
 
-/*.conf
-Caddyfile
-!caddyfile/
-
 og_static/
 
 .vscode/
@@ -30,3 +26,7 @@ caddy/prometheus
 
 caddy/*.pem
 caddy/*.key
+
+rpm-build/
+
+*.rpm
