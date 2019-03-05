@@ -22,17 +22,17 @@ deploy:
     file_glob: true
     skip_cleanup: true
     on:
-      repo: journeymidnight/caddy
+      repo: journeymidnight/yig-front-caddy
       tags: true
 
   - provider: script
     script: echo "$DOCKER_PASSWORD"|docker login -u "$DOCKER_USERNAME" --password-stdin  && docker tag journeymidnight/caddy journeymidnight/caddy:$TRAVIS_TAG && docker push journeymidnight/caddy:$TRAVIS_TAG
     on:
-      repo: journeymidnight/caddy
+      repo: journeymidnight/yig-front-caddy
       tags: true
 
   - provider: script
     script: echo "$DOCKER_PASSWORD"|docker login -u "$DOCKER_USERNAME" --password-stdin  && docker push journeymidnight/caddy
     on:
-      repo: journeymidnight/caddy
+      repo: journeymidnight/yig-front-caddy
       branch: master
