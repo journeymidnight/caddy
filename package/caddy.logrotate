@@ -1,6 +1,6 @@
 compress
 /var/log/caddy/access.log
-/var/log/caddy/err.log
+/var/log/caddy/error.log
 {
     daily
     rotate 7

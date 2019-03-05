@@ -8,10 +8,10 @@ VER=1.1
 echo "Git get full depth..."
 git fetch --unshallow
 REL=`git rev-parse --short HEAD`git
-REL=`git log --oneline|wc -l`.$REL
+REL=`git log --oneline|wc -l|sed 's/^[ ]*//'`.$REL
 RPMTOPDIR=$GITROOT/rpm-build
 echo "Ver: $VER, Release: $REL"
-
+pwd
 
 rm -rf $RPMTOPDIR
 # Create tarball
