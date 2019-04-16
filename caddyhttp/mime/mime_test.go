@@ -30,7 +30,21 @@ func TestMimeHandler(t *testing.T) {
 		".swf":  "application/x-shockwave-flash",
 	}
 
-	m := Mime{Configs: mimes}
+	setquery := SetQuery{}
+	testquery := "testquery"
+	setquery[testquery] = new(Parametervalue)
+	setquery[testquery].Parameter = "text/html"
+	setquery[testquery].SettingParameter = "text/plain"
+	querymimes := setquery
+
+	setheader := SetHeader{}
+	testheader := "testheader"
+	setheader[testheader] = new(Parametervalue)
+	setheader[testheader].Parameter = "text/html"
+	setheader[testheader].SettingParameter = "text/plain"
+	headermimes := setheader
+
+	m := Mime{Configs: mimes, SetQuerys:querymimes, SetHeaders:headermimes}
 
 	w := httptest.NewRecorder()
 	exts := []string{
@@ -60,6 +74,40 @@ func TestMimeHandler(t *testing.T) {
 			t.Error(err)
 		}
 		m.Next = nextFunc(false, "")
+		_, err = m.ServeHTTP(w, r)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	w = httptest.NewRecorder()
+	exts = []string{
+		".htm1", ".abc", ".mdx",
+	}
+	for _, e := range exts {
+		url := "/file" + e + "?test=textquery/html"
+		r, err :=http.NewRequest("Get",url,nil)
+		if err != nil {
+			t.Error(err)
+		}
+		m.Next = nextFunc(false, headermimes[testheader].SettingParameter)
+		_, err = m.ServeHTTP(w, r)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	w = httptest.NewRecorder()
+	exts = []string{
+		".htm1", ".abc", ".mdx",
+	}
+	for _, e := range exts {
+		url := "/file" + e + "?test=textheader/html"
+		r, err :=http.NewRequest("Get",url,nil)
+		if err != nil {
+			t.Error(err)
+		}
+		m.Next = nextFunc(false, headermimes[testheader].SettingParameter)
 		_, err = m.ServeHTTP(w, r)
 		if err != nil {
 			t.Error(err)
