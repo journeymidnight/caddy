@@ -26,13 +26,13 @@ import (
 // not modified concurrently.
 type Config map[string]string
 
-type SetQuery map[string] *Parametervalue
+type SetQuery map[string] *ParameterValue
 
-type SetHeader map[string] *Parametervalue
+type SetHeader map[string] *ParameterValue
 
-type Parametervalue struct {
+type ParameterValue struct {
 	Parameter string
-	SettingParameter string
+	SettingContentType string
 }
 
 
@@ -55,24 +55,24 @@ func (e Mime) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	}
 	v := r.URL.Query()
 	for key := range e.SetQuerys {
-		reqparameter := v.Get(key)
-		if reqparameter != "" {
-			if reqparameter == e.SetQuerys[key].Parameter && e.SetQuerys[key].Parameter != "" {
-				w.Header().Set("Content-Type", e.SetQuerys[key].SettingParameter)
+		reqkey := v.Get(key)
+		if reqkey != "" {
+			if reqkey == e.SetQuerys[key].Parameter && e.SetQuerys[key].Parameter != "" {
+				w.Header().Set("Content-Type", e.SetQuerys[key].SettingContentType)
 			}
 			if e.SetQuerys[key].Parameter == ""{
-				w.Header().Set("Content-Type", e.SetQuerys[key].SettingParameter)
+				w.Header().Set("Content-Type", e.SetQuerys[key].SettingContentType)
 			}
 		}
 	}
 	for key := range e.SetHeaders {
-		reqparameter := v.Get(key)
-		if reqparameter != "" {
-			if reqparameter == e.SetHeaders[key].Parameter && e.SetHeaders[key].Parameter != "" {
-				w.Header().Set("Content-Type", e.SetHeaders[key].SettingParameter)
+		reqkey := v.Get(key)
+		if reqkey != "" {
+			if reqkey == e.SetHeaders[key].Parameter && e.SetHeaders[key].Parameter != "" {
+				w.Header().Set("Content-Type", e.SetHeaders[key].SettingContentType)
 			}
 			if e.SetHeaders[key].Parameter == ""{
-				w.Header().Set("Content-Type", e.SetHeaders[key].SettingParameter)
+				w.Header().Set("Content-Type", e.SetHeaders[key].SettingContentType)
 			}
 		}
 	}

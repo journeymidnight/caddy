@@ -51,7 +51,7 @@ func mimeParse(c *caddy.Controller) (Config, SetQuery, SetHeader, error) {
 		args := c.RemainingArgs()
 		switch len(args) {
 		case 2:
-			if err := validateExtoutside(configs, args[0]); err != nil {
+			if err := validateExtOutside(configs, args[0]); err != nil {
 				return configs, setquerys, setheaders, err
 			}
 			configs[args[0]] = args[1]
@@ -69,7 +69,7 @@ func mimeParse(c *caddy.Controller) (Config, SetQuery, SetHeader, error) {
 			for c.NextBlock() {
 				ext := c.Val()
 				//check the correctness of key-data
-				if err := valiKeydateExtinside(ext); err != nil {
+				if err := valiKeydateExtInside(ext); err != nil {
 					return configs, setquerys, setheaders, err
 				}
 				switch ext {
@@ -83,12 +83,12 @@ func mimeParse(c *caddy.Controller) (Config, SetQuery, SetHeader, error) {
 					if value =="}" {
 						return configs, setquerys, setheaders, c.ArgErr()
 					}
-					setquerys[key] = new(Parametervalue)
-					setquerys[key].SettingParameter = value
+					setquerys[key] = new(ParameterValue)
+					setquerys[key].SettingContentType = value
 					setquerys[key].Parameter = ""
 					if c.NextArg() {
 						setquerys[key].Parameter = value
-						setquerys[key].SettingParameter = c.Val()
+						setquerys[key].SettingContentType = c.Val()
 					}
 					break
 				case "Header": //when the key is header, get the line
@@ -101,12 +101,12 @@ func mimeParse(c *caddy.Controller) (Config, SetQuery, SetHeader, error) {
 					if value =="}" {
 						return configs, setquerys, setheaders, c.ArgErr()
 					}
-					setheaders[key] = new(Parametervalue)
-					setheaders[key].SettingParameter = value
+					setheaders[key] = new(ParameterValue)
+					setheaders[key].SettingContentType = value
 					setheaders[key].Parameter = ""
 					if c.NextArg() {
 						setheaders[key].Parameter = value
-						setheaders[key].SettingParameter = c.Val()
+						setheaders[key].SettingContentType = c.Val()
 					}
 					break
 				default: //set the content-type directly
@@ -124,7 +124,7 @@ func mimeParse(c *caddy.Controller) (Config, SetQuery, SetHeader, error) {
 }
 
 // validateExt checks for valid file name extension.
-func validateExtoutside(configs Config, ext string) error {
+func validateExtOutside(configs Config, ext string) error {
 	if !strings.HasPrefix(ext, ".") {
 		return fmt.Errorf(`mime: invalid extension "%v" (must start with dot)`, ext)
 	}
@@ -135,7 +135,7 @@ func validateExtoutside(configs Config, ext string) error {
 }
 
 // check the correctness of key-data
-func valiKeydateExtinside(ext string) error {
+func valiKeydateExtInside(ext string) error {
 	if strings.HasPrefix(ext, ".") || ext == "Query" || ext == "Header" {
 		return nil
 	}
