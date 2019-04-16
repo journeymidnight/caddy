@@ -65,11 +65,25 @@ func TestSetup(t *testing.T) {
 		{`mime { .html
 		} `, true},
 		{`mime .txt text/plain`, false},
+		{`mime { Query       }`,true},
+		{`mime { Query test      }`,true},
+		{`mime { Query test text/html     }`,false},
+		{`mime { Query test text/html text/plain    }`,false},
+		{`mime { Query test text/html text/plain  test  }`,true},
+		{`mime { Header }`,true},
+		{`mime { Header test      }`,true},
+		{`mime { Header test text/html     }`,false},
+		{`mime { Header test text/html text/plain    }`,false},
+		{`mime { Header test text/html text/plain  test  }`,true},
 	}
 	for i, test := range tests {
-		m, err := mimeParse(caddy.NewTestController("http", test.input))
+		m, n, o, err := mimeParse(caddy.NewTestController("http", test.input))
 		if test.shouldErr && err == nil {
 			t.Errorf("Test %v: Expected error but found nil %v", i, m)
+		} else if test.shouldErr && err == nil {
+			t.Errorf("Test %v: Expected error but found nil %v", i, n)
+		} else if test.shouldErr && err == nil {
+			t.Errorf("Test %v: Expected error but found nil %v", i, o)
 		} else if !test.shouldErr && err != nil {
 			t.Errorf("Test %v: Expected no error but found error: %v", i, err)
 		}

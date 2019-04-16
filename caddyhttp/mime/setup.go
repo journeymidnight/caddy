@@ -31,53 +31,100 @@ func init() {
 
 // setup configures a new mime middleware instance.
 func setup(c *caddy.Controller) error {
-	configs, err := mimeParse(c)
+	configs, setquerys, setheaders, err := mimeParse(c)
 	if err != nil {
 		return err
 	}
-
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
-		return Mime{Next: next, Configs: configs}
+		return Mime{Next: next, Configs: configs, SetQuerys:setquerys, SetHeaders: setheaders}
 	})
-
 	return nil
 }
 
-func mimeParse(c *caddy.Controller) (Config, error) {
+func mimeParse(c *caddy.Controller) (Config, SetQuery, SetHeader, error) {
 	configs := Config{}
-
+	setquerys := SetQuery{}
+	setheaders := SetHeader{}
 	for c.Next() {
 		// At least one extension is required
 
 		args := c.RemainingArgs()
 		switch len(args) {
 		case 2:
-			if err := validateExt(configs, args[0]); err != nil {
-				return configs, err
+			if err := validateExtoutside(configs, args[0]); err != nil {
+				return configs, setquerys, setheaders, err
 			}
 			configs[args[0]] = args[1]
 		case 1:
-			return configs, c.ArgErr()
+			return configs, setquerys, setheaders, c.ArgErr()
 		case 0:
+			// At least one extension is required
+			//Change: this func must be like this
+			//  mime {
+			//      Query Key [Req.value] value
+			//      Header key [Req.value] value
+			//      .file-type value
+			//      ...
+			//  }
 			for c.NextBlock() {
 				ext := c.Val()
-				if err := validateExt(configs, ext); err != nil {
-					return configs, err
+				//check the correctness of key-data
+				if err := valiKeydateExtinside(ext); err != nil {
+					return configs, setquerys, setheaders, err
 				}
-				if !c.NextArg() {
-					return configs, c.ArgErr()
+				switch ext {
+				case "Query": //when the key is header, get the line
+					c.NextArg()
+					key := c.Val()
+					if !c.NextArg() {
+						return configs, setquerys, setheaders, c.ArgErr()
+					}
+					value := c.Val()
+					if value =="}" {
+						return configs, setquerys, setheaders, c.ArgErr()
+					}
+					setquerys[key] = new(Parametervalue)
+					setquerys[key].SettingParameter = value
+					setquerys[key].Parameter = ""
+					if c.NextArg() {
+						setquerys[key].Parameter = value
+						setquerys[key].SettingParameter = c.Val()
+					}
+					break
+				case "Header": //when the key is header, get the line
+					c.NextArg()
+					key := c.Val()
+					if !c.NextArg() {
+						return configs, setquerys, setheaders, c.ArgErr()
+					}
+					value := c.Val()
+					if value =="}" {
+						return configs, setquerys, setheaders, c.ArgErr()
+					}
+					setheaders[key] = new(Parametervalue)
+					setheaders[key].SettingParameter = value
+					setheaders[key].Parameter = ""
+					if c.NextArg() {
+						setheaders[key].Parameter = value
+						setheaders[key].SettingParameter = c.Val()
+					}
+					break
+				default: //set the content-type directly
+					if _, err := validataExt(c, configs, ext); err != nil {
+						return configs, setquerys, setheaders, err
+					}
+					configs[ext] = c.Val()
 				}
-				configs[ext] = c.Val()
 			}
 		}
 
 	}
 
-	return configs, nil
+	return configs, setquerys, setheaders, nil
 }
 
 // validateExt checks for valid file name extension.
-func validateExt(configs Config, ext string) error {
+func validateExtoutside(configs Config, ext string) error {
 	if !strings.HasPrefix(ext, ".") {
 		return fmt.Errorf(`mime: invalid extension "%v" (must start with dot)`, ext)
 	}
@@ -85,4 +132,23 @@ func validateExt(configs Config, ext string) error {
 		return fmt.Errorf(`mime: duplicate extension "%v" found`, ext)
 	}
 	return nil
+}
+
+// check the correctness of key-data
+func valiKeydateExtinside(ext string) error {
+	if strings.HasPrefix(ext, ".") || ext == "Query" || ext == "Header" {
+		return nil
+	}
+	return fmt.Errorf(`mime: invalid extension "%v" (must start with dot or "Query" or "Header")`, ext)
+}
+
+// When we need set the file's response directly, we should check it at first.
+func validataExt(c *caddy.Controller,configs Config,ext string) (Config,error) {
+	if _, ok := configs[ext]; ok {
+		return configs,fmt.Errorf(`mime: duplicate extension "%v" found`, ext)
+	}
+	if !c.NextArg() {
+		return configs, c.ArgErr()
+	}
+	return configs,nil
 }

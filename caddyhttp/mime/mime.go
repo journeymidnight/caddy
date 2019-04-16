@@ -26,10 +26,23 @@ import (
 // not modified concurrently.
 type Config map[string]string
 
+type SetQuery map[string] *Parametervalue
+
+type SetHeader map[string] *Parametervalue
+
+type Parametervalue struct {
+	Parameter string
+	SettingParameter string
+}
+
+
+
 // Mime sets Content-Type header of requests based on configurations.
 type Mime struct {
 	Next    httpserver.Handler
 	Configs Config
+	SetQuerys SetQuery
+	SetHeaders SetHeader
 }
 
 // ServeHTTP implements the httpserver.Handler interface.
@@ -39,6 +52,29 @@ func (e Mime) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 
 	if contentType, ok := e.Configs[ext]; ok {
 		w.Header().Set("Content-Type", contentType)
+	}
+	v := r.URL.Query()
+	for key := range e.SetQuerys {
+		reqparameter := v.Get(key)
+		if reqparameter != "" {
+			if reqparameter == e.SetQuerys[key].Parameter && e.SetQuerys[key].Parameter != "" {
+				w.Header().Set("Content-Type", e.SetQuerys[key].SettingParameter)
+			}
+			if e.SetQuerys[key].Parameter == ""{
+				w.Header().Set("Content-Type", e.SetQuerys[key].SettingParameter)
+			}
+		}
+	}
+	for key := range e.SetHeaders {
+		reqparameter := v.Get(key)
+		if reqparameter != "" {
+			if reqparameter == e.SetHeaders[key].Parameter && e.SetHeaders[key].Parameter != "" {
+				w.Header().Set("Content-Type", e.SetHeaders[key].SettingParameter)
+			}
+			if e.SetHeaders[key].Parameter == ""{
+				w.Header().Set("Content-Type", e.SetHeaders[key].SettingParameter)
+			}
+		}
 	}
 
 	return e.Next.ServeHTTP(w, r)
