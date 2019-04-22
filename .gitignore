@@ -18,6 +18,7 @@ Caddyfile
 og_static/
 
 .vscode/
+rpm-build/
 
 *.bat
 caddy/caddy
