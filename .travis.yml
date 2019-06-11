@@ -17,7 +17,7 @@ script:
 
 deploy:
   - provider: releases
-    api_key: $GithubToken
+    api_key: $GHTOKEN
     file: $TRAVIS_BUILD_DIR/caddy*.x86_64.rpm
     file_glob: true
     skip_cleanup: true
