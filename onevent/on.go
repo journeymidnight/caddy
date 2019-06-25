@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/journeymidnight/yig-front-caddy"
+	caddy "github.com/journeymidnight/yig-front-caddy"
 	"github.com/journeymidnight/yig-front-caddy/onevent/hook"
 )
 

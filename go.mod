@@ -27,8 +27,8 @@ require (
 	github.com/dustin/go-humanize v0.0.0-20170228161531-259d2a102b87
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568
 	github.com/golang/mock v1.2.0
-	github.com/golang/protobuf v1.2.0
-	github.com/google/uuid v0.0.0-20171129191014-dec09d789f3d
+	github.com/golang/protobuf v1.3.1
+	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v0.0.0-20170718202341-a69d9f6de432
 	github.com/hashicorp/go-syslog v0.0.0-20170829120034-326bf4a7f709
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/miekg/dns v0.0.0-20170721150254-0f3adef2e220
 	github.com/naoina/go-stringutil v0.1.0
 	github.com/naoina/toml v0.1.1
-	github.com/prometheus/client_golang latest
+	github.com/prometheus/client_golang v1.0.0
 	github.com/russross/blackfriday v0.0.0-20170610170232-067529f716f4
 	github.com/xenolf/lego v0.0.0-20181204200439-4e842a5eb6dc
 	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25
@@ -48,5 +48,4 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-00010101000000-000000000000
 	gopkg.in/square/go-jose.v2 v2.0.0-00010101000000-000000000000 // indirect
 	gopkg.in/yaml.v2 v2.2.1
-
 )
