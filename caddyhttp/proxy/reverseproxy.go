@@ -510,7 +510,7 @@ func copyHeader(dst, src http.Header) {
 			}
 		}
 		for _, v := range vv {
-			dst.Add(k, v)
+			dst[k] = append(dst[k], v)
 		}
 	}
 }

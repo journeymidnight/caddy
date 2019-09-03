@@ -441,7 +441,7 @@ func parseBlock(c *caddyfile.Dispenser, u *staticUpstream, hasSrv bool) error {
 				return c.ArgErr()
 			}
 		}
-		u.downstreamHeaders.Add(header, value)
+		u.downstreamHeaders[header] = append(u.downstreamHeaders[header], value)
 	case "transparent":
 		// Note: X-Forwarded-For header is always being appended for proxy connections
 		// See implementation of createUpstreamRequest in proxy.go

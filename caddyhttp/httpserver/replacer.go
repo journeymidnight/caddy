@@ -19,7 +19,6 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -32,7 +31,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/journeymidnight/yig-front-caddy"
+	"fmt"
+
+	caddy "github.com/journeymidnight/yig-front-caddy"
 	"github.com/journeymidnight/yig-front-caddy/caddytls"
 )
 
