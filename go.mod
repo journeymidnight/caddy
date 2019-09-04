@@ -26,6 +26,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v0.0.0-20170228161531-259d2a102b87
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
@@ -43,6 +44,7 @@ require (
 	github.com/prometheus/client_golang v1.0.0
 	github.com/russross/blackfriday v0.0.0-20170610170232-067529f716f4
 	github.com/xenolf/lego v0.0.0-20181204200439-4e842a5eb6dc
+	github.com/xxtea/xxtea-go v0.0.0-20170828040851-35c4b17eecf6
 	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25
 	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-00010101000000-000000000000

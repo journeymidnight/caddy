@@ -614,6 +614,7 @@ var directives = []string{
 	"minify", // github.com/hacdias/caddy-minify
 	"gzip",
 	"header",
+	"host",
 	"geoip", // github.com/kodnaplakal/caddy-geoip
 	"errors",
 	"authz",        // github.com/casbin/caddy-authz
