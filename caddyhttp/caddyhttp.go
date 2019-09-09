@@ -28,6 +28,7 @@ import (
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/fastcgi"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/gzip"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/header"
+	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/host"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/index"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/internalsrv"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/limits"
