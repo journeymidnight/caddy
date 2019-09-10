@@ -2,7 +2,7 @@ package handle
 
 import "github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta/types"
 
-type CostomDomain interface {
+type CustomDomainInterface interface {
 	//CustomDomain Meta Interface
 	GetDomainOfBucketDomain(projectId string, domainHost string) (info types.DomainInfo, err error)
 	ValidBucket(bucket string) (uid string, err error)

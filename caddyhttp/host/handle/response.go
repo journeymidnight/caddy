@@ -1,8 +1,8 @@
 package handle
 
 import (
-	"bytes"
 	"encoding/xml"
+	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta/types"
 	"time"
 )
 
@@ -10,33 +10,36 @@ const (
 	timeFormatAMZ = "2006-01-02T15:04:05.000Z" // Reply date format
 )
 
-type DomainResponse struct {
-	ProjectId  string `xml:"project-id"`
-	DomainHost string `xml:"host"`
-	Domain     string `xml:"bucket-domain"`
-	TlsKey     string `xml:"tls-key"`
-	Tls        string `xml:"tls"`
-}
-
 type Response struct {
-	XMLName      xml.Name `xml:"http://www.unicloud.com CustomDomainResult" json:"-"`
-	LastModified string   // time string of format "2006-01-02T15:04:05.000Z"
+	XMLName          xml.Name `xml:"http://www.unicloud.com CustomDomainResult" json:"-"`
+	LastModified     string   // time string of format "2006-01-02T15:04:05.000Z"
+	CustomDomainInfo CustomDomainInfo
 }
 
-func GenerateObjectResponse(lastModified time.Time) Response {
+type CustomDomainInfo struct {
+	CustomDomain []CustomDomain
+}
+
+type CustomDomain struct {
+	ProjectId    string `xml:"project_id"`
+	HostDomain   string `xml:"host_domain"`
+	BucketDomain string `xml:"bucket_domain"`
+}
+
+func GetResponse(data []types.DomainInfo, lastModified time.Time) Response {
 	lastModified = time.Now()
-	return Response{
-		LastModified: lastModified.UTC().Format(timeFormatAMZ),
+	customDomains := []CustomDomain{}
+	for _, data := range data {
+		custom := CustomDomain{}
+		custom.ProjectId = data.ProjectId
+		custom.BucketDomain = data.DomainBucket
+		custom.HostDomain = data.DomainHost
+		customDomains = append(customDomains, custom)
 	}
-}
-
-func EncodeResponse(result []byte, response interface{}) []byte {
-	var bytesBuffer bytes.Buffer
-	var bingo []byte
-	bytesBuffer.WriteString(xml.Header)
-	e := xml.NewEncoder(&bytesBuffer)
-	e.Encode(response)
-	bingo = bytesBuffer.Bytes()
-	bingo = append(bingo, result...)
-	return bingo
+	customDomainInfo := CustomDomainInfo{}
+	customDomainInfo.CustomDomain = customDomains
+	return Response{
+		LastModified:     lastModified.UTC().Format(timeFormatAMZ),
+		CustomDomainInfo: customDomainInfo,
+	}
 }

@@ -4,7 +4,6 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var HOST Host
@@ -16,7 +15,7 @@ type Host struct {
 	Domain           []string
 	CustomDomainFlag string
 	SecretKey        string
-	Meta             CostomDomain
+	Meta             CustomDomainInterface
 }
 
 func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {
@@ -43,11 +42,8 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 			return status, err
 		}
 		if result != nil {
-			var time time.Time
-			response := GenerateObjectResponse(time)
 			w.WriteHeader(http.StatusOK)
-			encodedSuccessResponse := EncodeResponse(result, response)
-			return w.Write(encodedSuccessResponse)
+			return w.Write(result)
 		}
 		return http.StatusOK, nil
 	}
@@ -59,12 +55,12 @@ func ValidHost(host string) bool {
 		if domain == host {
 			return true
 		}
-		lenth := len(host) - len(domain)
-		if lenth < 1 {
+		length := len(host) - len(domain)
+		if length < 1 {
 			continue
 		}
 		a := strings.LastIndex(host, domain)
-		if a == lenth {
+		if a == length {
 			return true
 		}
 	}

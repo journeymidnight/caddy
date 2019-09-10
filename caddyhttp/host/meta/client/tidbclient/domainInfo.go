@@ -6,7 +6,7 @@ import (
 )
 
 func (DB *TidbClient) GetDomainOfBucketDomain(projectId string, domainHost string) (info types.DomainInfo, err error) {
-	var domainbucket string
+	var domainBucket string
 	sql, args := info.GetDomainOfBucketDomain(projectId, domainHost)
 	row, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
@@ -14,8 +14,8 @@ func (DB *TidbClient) GetDomainOfBucketDomain(projectId string, domainHost strin
 	}
 	defer row.Close()
 	row.Next()
-	err = row.Scan(&domainbucket)
-	info.DomainBucket = domainbucket
+	err = row.Scan(&domainBucket)
+	info.DomainBucket = domainBucket
 	return
 }
 
@@ -36,7 +36,7 @@ func (DB *TidbClient) GetBucket(bucket string) (uid string, err error) {
 }
 
 func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types.DomainInfo, err error) {
-	var pid, domainh, domainb string
+	var pid, domainH, domainB string
 	sql, args := info.GetDomain(projectId, domainHost)
 	row, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
@@ -44,13 +44,13 @@ func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types
 	}
 	defer row.Close()
 	row.Next()
-	err = row.Scan(&pid, &domainh, &domainb)
+	err = row.Scan(&pid, &domainH, &domainB)
 	if err != nil {
 		return
 	}
 	info.ProjectId = pid
-	info.DomainHost = domainh
-	info.DomainBucket = domainb
+	info.DomainHost = domainH
+	info.DomainBucket = domainB
 	return
 }
 
@@ -62,9 +62,9 @@ func (DB *TidbClient) GetDomainInfos(projectId string) (info []types.DomainInfo,
 		return
 	}
 	for rows.Next() {
-		IcustomDomain := types.DomainInfo{}
-		err = rows.Scan(&IcustomDomain.ProjectId, &IcustomDomain.DomainHost, &IcustomDomain.DomainBucket)
-		info = append(info, IcustomDomain)
+		ICustomDomain := types.DomainInfo{}
+		err = rows.Scan(&ICustomDomain.ProjectId, &ICustomDomain.DomainHost, &ICustomDomain.DomainBucket)
+		info = append(info, ICustomDomain)
 	}
 	if err != nil {
 		return
