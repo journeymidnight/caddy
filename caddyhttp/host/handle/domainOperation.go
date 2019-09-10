@@ -3,6 +3,7 @@ package handle
 import (
 	"encoding/xml"
 	"net/http"
+	"time"
 )
 
 func DomainOperation(flag string) (response []byte, status int, err error) {
@@ -23,7 +24,7 @@ func DomainOperation(flag string) (response []byte, status int, err error) {
 		status, err = TlsEditCustomDomain()
 		return
 	case "TlsDelCustomDomain":
-		status, err = TlsdelCustomDomain()
+		status, err = TlsDelCustomDomain()
 		return
 	default:
 		status = http.StatusForbidden
@@ -38,7 +39,9 @@ func GetCustomDomain() ([]byte, int, error) {
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	data, err = xml.Marshal(object)
+	var time time.Time
+	response := GetResponse(object, time)
+	data, err = xml.Marshal(response)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -47,9 +50,9 @@ func GetCustomDomain() ([]byte, int, error) {
 
 func NewCustomDomain() (int, error) {
 	projectId := Claim.ProjectId
-	domainhost := Claim.DomainHost
+	domainHost := Claim.DomainHost
 	bucket := Claim.Bucket
-	domainbucket := Claim.BucketDomain
+	domainBucket := Claim.BucketDomain
 	uid, err := HOST.Meta.ValidBucket(bucket)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -57,17 +60,17 @@ func NewCustomDomain() (int, error) {
 	if uid != projectId {
 		return http.StatusForbidden, err
 	}
-	resulthost, err := HOST.Meta.GetDomain(projectId, domainhost)
+	resultHost, err := HOST.Meta.GetDomain(projectId, domainHost)
 	if err == nil {
 		return http.StatusInternalServerError, err
 	}
-	if resulthost.DomainHost != "" {
+	if resultHost.DomainHost != "" {
 		return http.StatusForbidden, err
 	}
-	resulthost.ProjectId = projectId
-	resulthost.DomainHost = domainhost
-	resulthost.DomainBucket = domainbucket
-	err = HOST.Meta.InsertDomain(resulthost)
+	resultHost.ProjectId = projectId
+	resultHost.DomainHost = domainHost
+	resultHost.DomainBucket = domainBucket
+	err = HOST.Meta.InsertDomain(resultHost)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -76,8 +79,8 @@ func NewCustomDomain() (int, error) {
 
 func DelCustomDomain() (int, error) {
 	projectId := Claim.ProjectId
-	domainhost := Claim.DomainHost
-	info, err := HOST.Meta.GetDomain(projectId, domainhost)
+	domainHost := Claim.DomainHost
+	info, err := HOST.Meta.GetDomain(projectId, domainHost)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -101,7 +104,7 @@ func TlsEditCustomDomain() (status int, err error) {
 }
 
 //TODO
-func TlsdelCustomDomain() (status int, err error) {
+func TlsDelCustomDomain() (status int, err error) {
 	status = http.StatusOK
 	return
 }
