@@ -7,7 +7,7 @@
     }
 
     host {
-        domain s3.test.com,*.s3.test.com
+        domain s3.test.com,s3-internal.test.com
         custom_domainflag x-oss-action
         s3_db root:@tcp(10.5.0.17:4000)/yig
         business_db root:@tcp(10.5.0.17:4000)/unis
