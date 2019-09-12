@@ -1,6 +1,11 @@
 *:80 {
     import mime.types
 
+    caddylog {
+	log_path /var/log/caddy/yig-front-caddy.log
+	log_level 20
+    }
+
     host {
         domain s3.test.com,*.s3.test.com
         custom_domainflag x-oss-action

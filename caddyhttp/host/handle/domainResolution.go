@@ -5,6 +5,7 @@ import (
 )
 
 func DomainResolution(r *http.Request) (status int, err error) {
+	HOST.Log.Logger.Println(10, "Enter domain resolution")
 	// Get the target bucket
 	projectID := r.URL.Query().Get("project_id")
 	if projectID == "" {

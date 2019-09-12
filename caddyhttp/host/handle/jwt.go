@@ -26,6 +26,7 @@ type CustomerInfo struct {
 }
 
 func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, status int, err error) {
+	HOST.Log.Logger.Println(10, "Enter get method from JWT")
 	tokenString := r.Header.Get("Authorization")
 	tokenStrings := strings.Split(tokenString, " ")
 	token, err := jwt.ParseWithClaims(tokenStrings[1], &Claims{}, func(token *jwt.Token) (interface{}, error) {

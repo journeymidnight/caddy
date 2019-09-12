@@ -2,6 +2,7 @@ package handle
 
 import (
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
+	"github.com/journeymidnight/yig-front-caddy/helper"
 	"net/http"
 	"strings"
 )
@@ -16,9 +17,13 @@ type Host struct {
 	CustomDomainFlag string
 	SecretKey        string
 	Meta             CustomDomainInterface
+	Log              *helper.Log
 }
 
 func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {
+	logger := r.Context().Value("logger").(*helper.Log)
+	h.Log = logger
+	h.Log.Logger.Println(10, r.Host, r.Header, r.URL)
 	HOST = h
 	valid := ValidHost(r.Host)
 	v := r.URL.Query()
@@ -31,6 +36,7 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 		if status != http.StatusOK {
 			return status, err
 		}
+		h.Log.Logger.Println(10, http.StatusOK, "Custom domain name jump succeeded")
 	} else if flag != "" && valid == true {
 		claim, status, err := GetMethodFromJWT(r, h.SecretKey)
 		if err != nil {
@@ -43,14 +49,18 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 		}
 		if result != nil {
 			w.WriteHeader(http.StatusOK)
+			h.Log.Logger.Println(10, http.StatusOK, "Get custom domain success:", result)
 			return w.Write(result)
 		}
+		h.Log.Logger.Println(10, http.StatusOK, "Custom domain name succeeded")
 		return http.StatusOK, nil
 	}
+	h.Log.Logger.Println(10, http.StatusOK, "Successfully linked yig")
 	return h.Next.ServeHTTP(w, r)
 }
 
 func ValidHost(host string) bool {
+	HOST.Log.Logger.Println(10, "Enter ValidHost")
 	for _, domain := range HOST.Domain {
 		if domain == host {
 			return true

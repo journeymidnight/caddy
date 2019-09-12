@@ -33,6 +33,7 @@ func DomainOperation(flag string) (response []byte, status int, err error) {
 }
 
 func GetCustomDomain() ([]byte, int, error) {
+	HOST.Log.Logger.Println(10, "Enter get custom domain")
 	var data []byte
 	projectId := Claim.ProjectId
 	object, err := HOST.Meta.GetDomainInfos(projectId)
@@ -49,6 +50,7 @@ func GetCustomDomain() ([]byte, int, error) {
 }
 
 func NewCustomDomain() (int, error) {
+	HOST.Log.Logger.Println(10, "Enter new custom domain")
 	projectId := Claim.ProjectId
 	domainHost := Claim.DomainHost
 	bucket := Claim.Bucket
@@ -78,6 +80,7 @@ func NewCustomDomain() (int, error) {
 }
 
 func DelCustomDomain() (int, error) {
+	HOST.Log.Logger.Println(10, "Enter delete custom domain")
 	projectId := Claim.ProjectId
 	domainHost := Claim.DomainHost
 	info, err := HOST.Meta.GetDomain(projectId, domainHost)
