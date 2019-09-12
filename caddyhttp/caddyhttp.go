@@ -22,6 +22,7 @@ import (
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/basicauth"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/bind"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/browse"
+	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/caddylog"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/errors"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/expvar"
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp/extensions"
