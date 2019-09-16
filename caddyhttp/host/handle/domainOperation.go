@@ -2,29 +2,31 @@ package handle
 
 import (
 	"encoding/xml"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
-func DomainOperation(flag string) (response []byte, status int, err error) {
+func DomainOperation(r *http.Request, flag string) (response []byte, status int, err error) {
 	switch flag {
 	case "GetCustomDomain":
-		response, status, err = GetCustomDomain()
+		response, status, err = GetCustomDomain(r)
 		return
 	case "NewCustomDomain":
-		status, err = NewCustomDomain()
+		status, err = NewCustomDomain(r)
 		return
 	case "DelCustomDomain":
-		status, err = DelCustomDomain()
+		status, err = DelCustomDomain(r)
 		return
 	case "TlsNewCustomDomain":
-		status, err = TlsNewCustomDomain()
+		status, err = TlsNewCustomDomain(r)
 		return
 	case "TlsEditCustomDomain":
-		status, err = TlsEditCustomDomain()
+		status, err = TlsEditCustomDomain(r)
 		return
 	case "TlsDelCustomDomain":
-		status, err = TlsDelCustomDomain()
+		status, err = TlsDelCustomDomain(r)
 		return
 	default:
 		status = http.StatusForbidden
@@ -32,8 +34,11 @@ func DomainOperation(flag string) (response []byte, status int, err error) {
 	}
 }
 
-func GetCustomDomain() ([]byte, int, error) {
-	HOST.Log.Logger.Println(10, "Enter get custom domain")
+func GetCustomDomain(r *http.Request) ([]byte, int, error) {
+	if r.Method != "GET" {
+		return nil, http.StatusMethodNotAllowed, fmt.Errorf("The request was made using the wrong request method! ")
+	}
+	HOST.Log.Println(10, "Enter get custom domain")
 	var data []byte
 	projectId := Claim.ProjectId
 	object, err := HOST.Meta.GetDomainInfos(projectId)
@@ -49,25 +54,32 @@ func GetCustomDomain() ([]byte, int, error) {
 	return data, http.StatusOK, nil
 }
 
-func NewCustomDomain() (int, error) {
-	HOST.Log.Logger.Println(10, "Enter new custom domain")
+func NewCustomDomain(r *http.Request) (int, error) {
+	if r.Method != "PUT" {
+		return http.StatusMethodNotAllowed, fmt.Errorf("The request was made using the wrong request method! ")
+	}
+	HOST.Log.Println(10, "Enter new custom domain")
 	projectId := Claim.ProjectId
 	domainHost := Claim.DomainHost
 	bucket := Claim.Bucket
 	domainBucket := Claim.BucketDomain
+	if projectId == "" || domainHost == "" || bucket == "" || domainBucket == "" {
+		return http.StatusBadRequest, fmt.Errorf("Parameter parsing carried by JWT failed. ")
+	}
+	validDomainBucket := strings.Split(domainBucket, ".")
+	if bucket != validDomainBucket[0] {
+		return http.StatusBadRequest, fmt.Errorf("Bucket domain name and bucket do not match. ")
+	}
 	uid, err := HOST.Meta.ValidBucket(bucket)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return http.StatusBadRequest, err
 	}
 	if uid != projectId {
-		return http.StatusForbidden, err
+		return http.StatusForbidden, fmt.Errorf("No bucket operation permission! ")
 	}
 	resultHost, err := HOST.Meta.GetDomain(projectId, domainHost)
-	if err == nil {
-		return http.StatusInternalServerError, err
-	}
 	if resultHost.DomainHost != "" {
-		return http.StatusForbidden, err
+		return http.StatusForbidden, fmt.Errorf("The selected domain name has been customized for domain name binding. ")
 	}
 	resultHost.ProjectId = projectId
 	resultHost.DomainHost = domainHost
@@ -76,38 +88,44 @@ func NewCustomDomain() (int, error) {
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusNoContent, nil
+	return http.StatusCreated, nil
 }
 
-func DelCustomDomain() (int, error) {
-	HOST.Log.Logger.Println(10, "Enter delete custom domain")
+func DelCustomDomain(r *http.Request) (int, error) {
+	if r.Method != "DELETE" {
+		return http.StatusMethodNotAllowed, fmt.Errorf("The request was made using the wrong request method! ")
+	}
+	HOST.Log.Println(10, "Enter delete custom domain")
 	projectId := Claim.ProjectId
 	domainHost := Claim.DomainHost
+	if projectId == "" || domainHost == "" {
+		return http.StatusBadRequest, fmt.Errorf("Parameter parsing carried by JWT failed. ")
+	}
 	info, err := HOST.Meta.GetDomain(projectId, domainHost)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return http.StatusBadRequest, err
 	}
 	err = HOST.Meta.DelDomain(info)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return http.StatusBadRequest, fmt.Errorf("The specified deleted bucket does not exist! ")
 	}
-	return http.StatusNoContent, nil
+	return http.StatusAccepted, nil
 }
 
 //TODO
-func TlsNewCustomDomain() (status int, err error) {
+func TlsNewCustomDomain(r *http.Request) (status int, err error) {
 	status = http.StatusOK
 	return
 }
 
 //TODO
-func TlsEditCustomDomain() (status int, err error) {
+func TlsEditCustomDomain(r *http.Request) (status int, err error) {
 	status = http.StatusOK
 	return
 }
 
 //TODO
-func TlsDelCustomDomain() (status int, err error) {
+func TlsDelCustomDomain(r *http.Request) (status int, err error) {
 	status = http.StatusOK
 	return
 }
