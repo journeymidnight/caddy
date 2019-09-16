@@ -58,7 +58,7 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 		h.Log.Println(10, http.StatusOK, "Custom domain name succeeded")
 		return http.StatusOK, nil
 	}
-	h.Log.Println(10, http.StatusOK, "Successfully linked yig")
+	h.Log.Println(10, r.Method, r.Host, http.StatusOK, "Successfully linked yig")
 	return h.Next.ServeHTTP(w, r)
 }
 
