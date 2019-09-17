@@ -52,7 +52,7 @@ func GetCustomDomain(r *http.Request) ([]byte, int, error) {
 	response := GetResponse(object, time)
 	data, err = xml.Marshal(response)
 	if err != nil {
-		return nil, http.StatusInternalServerError, err
+		return nil, http.StatusInternalServerError, fmt.Errorf("Return parameter parsing failed. ")
 	}
 	return data, http.StatusOK, nil
 }
@@ -96,7 +96,7 @@ func NewCustomDomain(r *http.Request) (int, error) {
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusAccepted, nil
+	return http.StatusCreated, nil
 }
 
 func DelCustomDomain(r *http.Request) (int, error) {
