@@ -51,12 +51,12 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 			return status, err
 		}
 		if result != nil {
-			w.WriteHeader(http.StatusOK)
-			h.Log.Println(10, http.StatusOK, "Get custom domain success:", string(result))
+			w.WriteHeader(status)
+			h.Log.Println(10, status, "The information returned is:", string(result))
 			return w.Write(result)
 		}
-		h.Log.Println(10, http.StatusOK, "Custom domain name succeeded")
-		return http.StatusOK, nil
+		h.Log.Println(10, status, "Custom domain name succeeded")
+		return status, nil
 	}
 	h.Log.Println(10, http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 	return h.Next.ServeHTTP(w, r)

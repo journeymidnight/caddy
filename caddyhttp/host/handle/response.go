@@ -10,7 +10,7 @@ const (
 	timeFormatAMZ = "2006-01-02T15:04:05.000Z" // Reply date format
 )
 
-type Response struct {
+type ResponseWithDomainInfo struct {
 	XMLName          xml.Name `xml:"http://www.unicloud.com CustomDomainResult" json:"-"`
 	LastModified     string   // time string of format "2006-01-02T15:04:05.000Z"
 	CustomDomainInfo CustomDomainInfo
@@ -26,7 +26,12 @@ type CustomDomain struct {
 	BucketDomain string `xml:"bucket_domain"`
 }
 
-func GetResponse(data []types.DomainInfo, lastModified time.Time) Response {
+type ResponseWithDomainHost struct {
+	XMLName            xml.Name `xml:"http://www.unicloud.com CustomDomainResult" json:"-"`
+	CustomBucketDomain string
+}
+
+func GetResponseWithDomainInfo(data []types.DomainInfo, lastModified time.Time) ResponseWithDomainInfo {
 	lastModified = time.Now()
 	customDomains := []CustomDomain{}
 	for _, data := range data {
@@ -38,8 +43,14 @@ func GetResponse(data []types.DomainInfo, lastModified time.Time) Response {
 	}
 	customDomainInfo := CustomDomainInfo{}
 	customDomainInfo.CustomDomain = customDomains
-	return Response{
+	return ResponseWithDomainInfo{
 		LastModified:     lastModified.UTC().Format(timeFormatAMZ),
 		CustomDomainInfo: customDomainInfo,
+	}
+}
+
+func GetResponseWithDomainHost(data string) ResponseWithDomainHost {
+	return ResponseWithDomainHost{
+		CustomBucketDomain: data,
 	}
 }
