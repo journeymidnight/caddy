@@ -4,8 +4,8 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta/types"
 )
 
-func (m *Meta) GetDomainOfBucketDomain(projectId string, domainHost string) (info types.DomainInfo, err error) {
-	info, err = m.Client.GetDomainOfBucketDomain(projectId, domainHost)
+func (m *Meta) GetDomainOfBucketDomain(domainHost string) (info types.DomainInfo, err error) {
+	info, err = m.Client.GetDomainOfBucketDomain(domainHost)
 	return
 }
 

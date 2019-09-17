@@ -37,7 +37,7 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 		if status != http.StatusOK {
 			return status, err
 		}
-		h.Log.Println(10, http.StatusOK, "Custom domain name jump succeeded")
+		h.Log.Println(10, "Custom domain name jump succeeded")
 	} else if flag != "" && valid == true {
 		claim, status, err := GetMethodFromJWT(r, h.SecretKey)
 		if err != nil {
@@ -58,7 +58,7 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 		h.Log.Println(10, http.StatusOK, "Custom domain name succeeded")
 		return http.StatusOK, nil
 	}
-	h.Log.Println(10, http.StatusOK, "Successfully linked yig")
+	h.Log.Println(10, http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 	return h.Next.ServeHTTP(w, r)
 }
 

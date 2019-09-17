@@ -5,14 +5,9 @@ import (
 )
 
 func DomainResolution(r *http.Request) (status int, err error) {
-	HOST.Log.Logger.Println(10, "Enter domain resolution")
-	// Get the target bucket
-	projectID := r.URL.Query().Get("project_id")
-	if projectID == "" {
-		return http.StatusForbidden, err
-	}
+	HOST.Log.Println(10, "Enter domain resolution")
 	// Get the corresponding target bucket address
-	domainInfo, err := HOST.Meta.GetDomainOfBucketDomain(projectID, r.Host)
+	domainInfo, err := HOST.Meta.GetDomainOfBucketDomain(r.Host)
 	if err != nil {
 		return http.StatusForbidden, err
 	}

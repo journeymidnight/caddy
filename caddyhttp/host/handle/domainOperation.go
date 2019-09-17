@@ -41,6 +41,9 @@ func GetCustomDomain(r *http.Request) ([]byte, int, error) {
 	HOST.Log.Println(10, "Enter get custom domain")
 	var data []byte
 	projectId := Claim.ProjectId
+	if projectId == "" {
+		return nil, http.StatusBadRequest, fmt.Errorf("Project_Id cannot be null. ")
+	}
 	object, err := HOST.Meta.GetDomainInfos(projectId)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -70,16 +73,21 @@ func NewCustomDomain(r *http.Request) (int, error) {
 	if bucket != validDomainBucket[0] {
 		return http.StatusBadRequest, fmt.Errorf("Bucket domain name and bucket do not match. ")
 	}
+	length := len(domainBucket) - len(r.Host)
+	a := strings.LastIndex(domainBucket, r.Host)
+	if a != length {
+		return http.StatusPreconditionFailed, fmt.Errorf("The bound domain name does not match the request server domain name. ")
+	}
 	uid, err := HOST.Meta.ValidBucket(bucket)
 	if err != nil {
-		return http.StatusBadRequest, err
+		return http.StatusNotFound, err
 	}
 	if uid != projectId {
-		return http.StatusForbidden, fmt.Errorf("No bucket operation permission! ")
+		return http.StatusNotFound, fmt.Errorf("No bucket operation permission! ")
 	}
 	resultHost, err := HOST.Meta.GetDomain(projectId, domainHost)
 	if resultHost.DomainHost != "" {
-		return http.StatusForbidden, fmt.Errorf("The selected domain name has been customized for domain name binding. ")
+		return http.StatusConflict, fmt.Errorf("The selected domain name has been customized for domain name binding. ")
 	}
 	resultHost.ProjectId = projectId
 	resultHost.DomainHost = domainHost
@@ -88,7 +96,7 @@ func NewCustomDomain(r *http.Request) (int, error) {
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusCreated, nil
+	return http.StatusAccepted, nil
 }
 
 func DelCustomDomain(r *http.Request) (int, error) {
@@ -103,7 +111,7 @@ func DelCustomDomain(r *http.Request) (int, error) {
 	}
 	info, err := HOST.Meta.GetDomain(projectId, domainHost)
 	if err != nil {
-		return http.StatusBadRequest, err
+		return http.StatusInternalServerError, err
 	}
 	err = HOST.Meta.DelDomain(info)
 	if err != nil {

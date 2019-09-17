@@ -7,9 +7,9 @@ type DomainInfo struct {
 	DomainHost   string
 }
 
-func (c *DomainInfo) GetDomainOfBucketDomain(projectId string, domainHost string) (string, []interface{}) {
-	sql := "select bucket_domain from custom_domain where project_id=? and host_domain=?"
-	args := []interface{}{projectId, domainHost}
+func (c *DomainInfo) GetDomainOfBucketDomain(domainHost string) (string, []interface{}) {
+	sql := "select bucket_domain from custom_domain where host_domain=?"
+	args := []interface{}{domainHost}
 	return sql, args
 }
 
