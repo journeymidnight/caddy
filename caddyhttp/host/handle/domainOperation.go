@@ -130,7 +130,6 @@ func TlsNewCustomDomain(r *http.Request) (status int, err error) {
 	status = http.StatusOK
 	return
 }
-
 //TODO
 func TlsEditCustomDomain(r *http.Request) (status int, err error) {
 	status = http.StatusOK
