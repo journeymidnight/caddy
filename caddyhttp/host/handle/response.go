@@ -31,6 +31,11 @@ type ResponseWithDomainHost struct {
 	CustomBucketDomain string
 }
 
+type ResponseDomainResolutionErr struct {
+	XMLName xml.Name `xml:"http://www.unicloud.com CustomDomainResult" json:"-"`
+	Reason  string
+}
+
 func GetResponseWithDomainInfo(data []types.DomainInfo, lastModified time.Time) ResponseWithDomainInfo {
 	lastModified = time.Now()
 	customDomains := []CustomDomain{}
@@ -52,5 +57,11 @@ func GetResponseWithDomainInfo(data []types.DomainInfo, lastModified time.Time) 
 func GetResponseWithDomainHost(data string) ResponseWithDomainHost {
 	return ResponseWithDomainHost{
 		CustomBucketDomain: data,
+	}
+}
+
+func GetResponseDomainResolutionErr() ResponseDomainResolutionErr {
+	return ResponseDomainResolutionErr{
+		Reason: "The domain name you are using does not have the corresponding CNAME domain name resolution or the domain name CNAME resolution has not been bound.",
 	}
 }

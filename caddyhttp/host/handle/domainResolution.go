@@ -14,11 +14,15 @@ func DomainResolution(r *http.Request) (status int, err error) {
 	// Get the corresponding target bucket address
 	domainInfo, err := HOST.Meta.GetDomainOfBucketDomain(r.Host)
 	if err != nil {
-		return http.StatusForbidden, fmt.Errorf("No custom domain information was queried!")
+		return http.StatusForbidden, fmt.Errorf("No custom domain information was queried! ")
 	}
 	dst, err := CNAME(r.Host, DNSSERVICE)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("Query DNS domain name resolution failed.")
+		return http.StatusInternalServerError, fmt.Errorf("Query DNS domain name resolution failed. ")
+	}
+	if len(domainInfo.DomainBucket) > len(dst[0]) {
+		HOST.Log.Println(10, "The domain name resolution address of the CNAME is:", dst[0])
+		return http.StatusNotFound, fmt.Errorf("No DNS server resolution! ")
 	}
 	validDns := dst[0][0:len(domainInfo.DomainBucket)]
 	HOST.Log.Println(10, "The domain name resolution address of the CNAME is:", validDns)
@@ -26,7 +30,7 @@ func DomainResolution(r *http.Request) (status int, err error) {
 		r.Host = domainInfo.DomainBucket
 		return http.StatusOK, nil
 	}
-	return http.StatusNotFound, fmt.Errorf("No DNS server resolution!")
+	return http.StatusNotFound, fmt.Errorf("No DNS server resolution! ")
 }
 
 func CNAME(src string, dnsService string) (dst []string, err error) {
