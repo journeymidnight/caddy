@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"encoding/xml"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"github.com/journeymidnight/yig-front-caddy/caddylog"
 	"github.com/journeymidnight/yig-front-caddy/helper"
@@ -33,15 +32,6 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 	if flag == "" && valid != true {
 		status, err := DomainResolution(r)
 		if err != nil {
-			if status == http.StatusNotFound {
-				h.Log.Println(10, status, err)
-				response, err := xml.Marshal(GetResponseDomainResolutionErr())
-				if err != nil {
-					return http.StatusInternalServerError, err
-				}
-				w.WriteHeader(status)
-				return w.Write(response)
-			}
 			h.Log.Println(10, status, err)
 			return status, err
 		}
