@@ -41,10 +41,11 @@ func GetCustomDomain(r *http.Request) ([]byte, int, error) {
 	HOST.Log.Println(10, "Enter get custom domain")
 	var data []byte
 	projectId := Claim.ProjectId
-	if projectId == "" {
+	bucketDomain := Claim.BucketDomain
+	if projectId == "" || bucketDomain == "" {
 		return nil, http.StatusBadRequest, fmt.Errorf("Project_Id cannot be null. ")
 	}
-	object, err := HOST.Meta.GetDomainInfos(projectId)
+	object, err := HOST.Meta.GetDomainInfos(projectId, bucketDomain)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -130,6 +131,7 @@ func TlsNewCustomDomain(r *http.Request) (status int, err error) {
 	status = http.StatusOK
 	return
 }
+
 //TODO
 func TlsEditCustomDomain(r *http.Request) (status int, err error) {
 	status = http.StatusOK

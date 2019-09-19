@@ -30,7 +30,7 @@ func DomainResolution(r *http.Request) (status int, err error) {
 		r.Host = domainInfo.DomainBucket
 		return http.StatusOK, nil
 	}
-	return http.StatusForbidden, fmt.Errorf("No DNS server resolution! ")
+	return http.StatusNotFound, fmt.Errorf("No DNS server resolution! ")
 }
 
 func CNAME(src string, dnsService string) (dst []string, err error) {

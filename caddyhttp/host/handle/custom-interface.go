@@ -7,7 +7,7 @@ type CustomDomainInterface interface {
 	GetDomainOfBucketDomain(domainHost string) (info types.DomainInfo, err error)
 	ValidBucket(bucket string) (uid string, err error)
 	GetDomain(projectId string, domainHost string) (info types.DomainInfo, err error)
-	GetDomainInfos(projectId string) (info []types.DomainInfo, err error)
+	GetDomainInfos(projectId string, bucketDomain string) (info []types.DomainInfo, err error)
 	InsertDomain(customDomainInfo types.DomainInfo) error
 	DelDomain(customDomainInfo types.DomainInfo) error
 }

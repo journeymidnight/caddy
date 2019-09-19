@@ -54,9 +54,9 @@ func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types
 	return
 }
 
-func (DB *TidbClient) GetDomainInfos(projectId string) (info []types.DomainInfo, err error) {
-	sql := "select * from custom_domain where project_id=?"
-	args := []interface{}{projectId}
+func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string) (info []types.DomainInfo, err error) {
+	sql := "select * from custom_domain where project_id=? and bucket_domain=?"
+	args := []interface{}{projectId, bucketDomain}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return

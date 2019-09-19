@@ -19,8 +19,8 @@ func (m *Meta) GetDomain(projectId string, domainHost string) (info types.Domain
 	return
 }
 
-func (m *Meta) GetDomainInfos(projectId string) (info []types.DomainInfo, err error) {
-	info, err = m.Client.GetDomainInfos(projectId)
+func (m *Meta) GetDomainInfos(projectId string, bucketDomain string) (info []types.DomainInfo, err error) {
+	info, err = m.Client.GetDomainInfos(projectId, bucketDomain)
 	return
 }
 
