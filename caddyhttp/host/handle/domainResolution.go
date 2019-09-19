@@ -16,16 +16,30 @@ func DomainResolution(r *http.Request) (status int, err error) {
 	if err != nil {
 		return http.StatusForbidden, fmt.Errorf("No custom domain information was queried! ")
 	}
-	dst, err := CNAME(r.Host, DNSSERVICE)
-	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("Query DNS domain name resolution failed. ")
+	validDns, ok := HOST.Cache.Get(r.Host)
+	if ok != true {
+		HOST.Log.Println(20, "Failed to find cache! ")
+		dst, err := CNAME(r.Host, DNSSERVICE)
+		if err != nil {
+			return http.StatusInternalServerError, fmt.Errorf("Query DNS domain name resolution failed. ")
+		}
+		if len(domainInfo.DomainBucket) > len(dst[0]) {
+			HOST.Log.Println(10, "The domain name resolution address of the CNAME is:", dst[0])
+			return http.StatusForbidden, fmt.Errorf("No DNS server resolution! ")
+		}
+		validDns = dst[0][0:len(domainInfo.DomainBucket)]
+		HOST.Log.Println(10, "The domain name resolution address of the CNAME is:", validDns)
+		if domainInfo.DomainBucket == validDns {
+			var test interface{}
+			test = validDns
+			_ = HOST.Cache.Set(r.Host, test)
+			HOST.Log.Println(10, "Insert a key-value pair into the cache:  key =", r.Host, " value =", validDns)
+			r.Host = domainInfo.DomainBucket
+			return http.StatusOK, nil
+		}
 	}
-	if len(domainInfo.DomainBucket) > len(dst[0]) {
-		HOST.Log.Println(10, "The domain name resolution address of the CNAME is:", dst[0])
-		return http.StatusForbidden, fmt.Errorf("No DNS server resolution! ")
-	}
-	validDns := dst[0][0:len(domainInfo.DomainBucket)]
-	HOST.Log.Println(10, "The domain name resolution address of the CNAME is:", validDns)
+	HOST.Log.Println(20, "Succeed to find cache! ")
+	HOST.Log.Println(10, "The parameters in the cache are:", validDns)
 	if domainInfo.DomainBucket == validDns {
 		r.Host = domainInfo.DomainBucket
 		return http.StatusOK, nil

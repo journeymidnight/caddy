@@ -6,6 +6,7 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/helper"
 	"net/http"
 	"strings"
+	"zvelo.io/ttlru"
 )
 
 var HOST Host
@@ -19,6 +20,7 @@ type Host struct {
 	SecretKey        string
 	Meta             CustomDomainInterface
 	Log              *caddylog.Logger
+	Cache            ttlru.Cache
 }
 
 func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {
