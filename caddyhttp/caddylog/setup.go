@@ -3,6 +3,8 @@ package caddylog
 import (
 	"github.com/journeymidnight/yig-front-caddy"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
+	"github.com/journeymidnight/yig-front-caddy/caddylog"
+	"os"
 	"strconv"
 )
 
@@ -15,6 +17,12 @@ func setup(c *caddy.Controller) error {
 	if err != nil {
 		return err
 	}
+
+	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		panic("Failed to open log file " + logPath)
+	}
+	logger = caddylog.New(f, "[yig-front-caddy]", caddylog.LstdFlags, logLevel)
 
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return Log{Next: next, LogPath: logPath, LogLevel: logLevel}

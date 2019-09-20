@@ -6,6 +6,8 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"strings"
+	"time"
+	"zvelo.io/ttlru"
 )
 
 func init() {
@@ -30,6 +32,7 @@ func setup(c *caddy.Controller) error {
 			CustomDomainFlag: customDomainFlag,
 			SecretKey:        secretKey,
 			Meta:             meta.New(s3DB, businessDB),
+			Cache:            ttlru.New(1024, ttlru.WithTTL(10*time.Minute)),
 		}
 	})
 	return nil

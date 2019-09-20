@@ -9,10 +9,10 @@ type Client interface {
 	CommitTrans(tx interface{}) error
 
 	//Domain
-	GetDomainOfBucketDomain(projectId string, domainHost string) (info types.DomainInfo, err error)
+	GetDomainOfBucketDomain(domainHost string) (info types.DomainInfo, err error)
 	GetBucket(bucket string) (uid string, err error)
 	GetDomain(projectId string, domainHost string) (info types.DomainInfo, err error)
-	GetDomainInfos(projectId string) (info []types.DomainInfo, err error)
+	GetDomainInfos(projectId string, bucketDomain string) (info []types.DomainInfo, err error)
 	InsertDomain(info types.DomainInfo, tx interface{}) (err error)
 	DelDomain(info types.DomainInfo, tx interface{}) (err error)
 

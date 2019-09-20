@@ -49,4 +49,5 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-00010101000000-000000000000
 	gopkg.in/square/go-jose.v2 v2.0.0-00010101000000-000000000000 // indirect
 	gopkg.in/yaml.v2 v2.2.1
+	zvelo.io/ttlru v1.0.9
 )

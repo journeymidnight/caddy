@@ -5,9 +5,9 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta/types"
 )
 
-func (DB *TidbClient) GetDomainOfBucketDomain(projectId string, domainHost string) (info types.DomainInfo, err error) {
+func (DB *TidbClient) GetDomainOfBucketDomain(domainHost string) (info types.DomainInfo, err error) {
 	var domainBucket string
-	sql, args := info.GetDomainOfBucketDomain(projectId, domainHost)
+	sql, args := info.GetDomainOfBucketDomain(domainHost)
 	row, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return
@@ -54,9 +54,9 @@ func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types
 	return
 }
 
-func (DB *TidbClient) GetDomainInfos(projectId string) (info []types.DomainInfo, err error) {
-	sql := "select * from custom_domain where project_id=?"
-	args := []interface{}{projectId}
+func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string) (info []types.DomainInfo, err error) {
+	sql := "select * from custom_domain where project_id=? and bucket_domain=?"
+	args := []interface{}{projectId, bucketDomain}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return

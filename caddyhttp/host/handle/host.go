@@ -6,6 +6,7 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/helper"
 	"net/http"
 	"strings"
+	"zvelo.io/ttlru"
 )
 
 var HOST Host
@@ -19,6 +20,7 @@ type Host struct {
 	SecretKey        string
 	Meta             CustomDomainInterface
 	Log              *caddylog.Logger
+	Cache            ttlru.Cache
 }
 
 func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {
@@ -32,12 +34,14 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 	if flag == "" && valid != true {
 		status, err := DomainResolution(r)
 		if err != nil {
+			h.Log.Println(10, status, err)
 			return status, err
 		}
-		if status != http.StatusOK {
+		if status > 300 {
+			h.Log.Println(10, status, err)
 			return status, err
 		}
-		h.Log.Println(10, http.StatusOK, "Custom domain name jump succeeded")
+		h.Log.Println(10, "Custom domain name jump succeeded")
 	} else if flag != "" && valid == true {
 		claim, status, err := GetMethodFromJWT(r, h.SecretKey)
 		if err != nil {
@@ -46,19 +50,20 @@ func (h Host) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err
 		}
 		Claim = *claim
 		result, status, err := DomainOperation(r, flag)
-		if err != nil || status >= 300 {
+		if err != nil || status > 300 {
 			h.Log.Println(10, status, err)
 			return status, err
 		}
 		if result != nil {
-			w.WriteHeader(http.StatusOK)
-			h.Log.Println(10, http.StatusOK, "Get custom domain success:", string(result))
+			w.WriteHeader(status)
+			h.Log.Println(10, status, "The information returned is:", string(result))
 			return w.Write(result)
 		}
-		h.Log.Println(10, http.StatusOK, "Custom domain name succeeded")
-		return http.StatusOK, nil
+		h.Log.Println(10, status, "Custom domain name succeeded")
+		w.WriteHeader(status)
+		return w.Write(result)
 	}
-	h.Log.Println(10, r.Method, r.Host, http.StatusOK, "Successfully linked yig")
+	h.Log.Println(10, http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 	return h.Next.ServeHTTP(w, r)
 }
 
