@@ -2,10 +2,10 @@ package host
 
 import (
 	"github.com/journeymidnight/yig-front-caddy"
+	"github.com/journeymidnight/yig-front-caddy/caddyhttp/client/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/handle"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
-	"strings"
+	"strconv"
 	"time"
 	"zvelo.io/ttlru"
 )
@@ -19,62 +19,79 @@ func init() {
 
 // setup configures a new host middleware instance.
 func setup(c *caddy.Controller) error {
-	s3DB, businessDB, domain, customDomainFlag, secretKey, err := hostParse(c)
+	db, customDomainFlag, secretKey, err := hostParse(c)
 	if err != nil {
 		return err
 	}
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return handle.Host{
 			Next:             next,
-			S3DB:             s3DB,
-			BusinessDB:       businessDB,
-			Domain:           domain,
 			CustomDomainFlag: customDomainFlag,
 			SecretKey:        secretKey,
-			Meta:             meta.New(s3DB, businessDB),
+			Client:           tidbclient.NewTidbClient(db),
 			Cache:            ttlru.New(1024, ttlru.WithTTL(10*time.Minute)),
 		}
 	})
 	return nil
 }
 
-func hostParse(c *caddy.Controller) (s3DB string, businessDB string, domainInfo []string, customDomainFlag string, secretKey string, err error) {
+func hostParse(c *caddy.Controller) (db tidbclient.DBInfo, customDomainFlag string, secretKey string, err error) {
 	for c.Next() {
 		for c.NextBlock() {
 			ext := c.Val()
 			switch ext {
 			case "s3_db":
 				if !c.NextArg() {
-					return
+					return db, "", "", c.ArgErr()
 				}
-				s3DB = c.Val()
+				db.S3Source = c.Val()
 				break
-			case "business_db":
+			case "caddy_db":
 				if !c.NextArg() {
-					return
+					return db, "", "", c.ArgErr()
 				}
-				businessDB = c.Val()
+				db.CaddySource = c.Val()
 				break
-			case "domain":
+			case "db_max_idle_conns":
 				if !c.NextArg() {
-					return
+					return db, "", "", c.ArgErr()
 				}
-				domain := c.Val()
-				domainInfo = strings.Split(domain, ",")
-				break
+				int, err := strconv.Atoi(c.Val())
+				if err != nil {
+					return db, "", "", err
+				}
+				db.DBMaxIdleConns = int
+			case "db_max_open_conns":
+				if !c.NextArg() {
+					return db, "", "", c.ArgErr()
+				}
+				int, err := strconv.Atoi(c.Val())
+				if err != nil {
+					return db, "", "", err
+				}
+				db.DBMaxOpenConns = int
+			case "db_conn_max_life_seconds":
+				if !c.NextArg() {
+					return db, "", "", c.ArgErr()
+				}
+				int, err := strconv.Atoi(c.Val())
+				if err != nil {
+					return db, "", "", err
+				}
+				db.DBConnMaxLifeSeconds = int
 			case "custom_domainflag":
 				if !c.NextArg() {
-					return
+					return db, "", "", c.ArgErr()
 				}
 				customDomainFlag = c.Val()
 				break
 			case "secret_key":
 				if !c.NextArg() {
-					return
+					return db, "", "", c.ArgErr()
 				}
 				secretKey = c.Val()
 			default:
-				return
+				return db, "", "", c.ArgErr()
 			}
 		}
 	}

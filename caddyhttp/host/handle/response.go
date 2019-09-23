@@ -2,7 +2,7 @@ package handle
 
 import (
 	"encoding/xml"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta/types"
+	"github.com/journeymidnight/yig-front-caddy/caddyhttp/client/types"
 	"time"
 )
 
