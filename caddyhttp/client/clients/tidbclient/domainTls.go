@@ -1,8 +1,6 @@
 package tidbclient
 
-import (
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/host/meta/types"
-)
+import "github.com/journeymidnight/yig-front-caddy/caddyhttp/client/types"
 
 func (DB *TidbClient) UpdateDomainTls(info types.DomainTlsInfo) error {
 	sql, args := info.UpdateDomainTlsInfo()
