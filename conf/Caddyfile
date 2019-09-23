@@ -7,10 +7,12 @@
     }
 
     host {
-        domain s3.test.com,s3-internal.test.com
         custom_domainflag x-oss-action
         s3_db root:@tcp(10.5.0.17:4000)/yig
-        business_db root:@tcp(10.5.0.17:4000)/unis
+        caddy_db root:@tcp(10.5.0.17:4000)/caddy
+        db_max_idle_conns 1024
+        db_max_open_conns 10240
+        db_conn_max_life_seconds 300
         secret_key hehehehe
     }
 

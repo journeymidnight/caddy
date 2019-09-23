@@ -9,8 +9,7 @@ import (
 )
 
 const DAYTIME = 86400
-
-var Claim Claims
+const MINITETIME = 900
 
 type Claims struct {
 	CustomerInfo
@@ -32,24 +31,19 @@ func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, status 
 	token, err := jwt.ParseWithClaims(tokenStrings[1], &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
 	})
-
-	if err == nil {
-		claim, ok := token.Claims.(*Claims)
-		time := time.Now().Unix()
-		lastTime := time + DAYTIME
-		firstTime := time - DAYTIME
-		if ok && token.Valid {
-			if claim.TimeStamp <= lastTime && claim.TimeStamp >= firstTime {
-				HOST.Log.Println(15, "Get the JWT parameters:", claim.ProjectId, claim.DomainHost, claim.Bucket, claim.BucketDomain)
-				return claim, http.StatusOK, nil
-
-			} else {
-				return claim, http.StatusForbidden, fmt.Errorf("JWT:Token has expired")
-			}
-		} else {
-			return claim, http.StatusInternalServerError, fmt.Errorf("JWT:Parameter conversion error")
-		}
-	} else {
+	if err != nil {
 		return claim, http.StatusForbidden, err
 	}
+	claim, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return claim, http.StatusInternalServerError, fmt.Errorf("JWT:Parameter conversion error")
+	}
+	time := time.Now().Unix()
+	lastTime := time + MINITETIME
+	firstTime := time - DAYTIME
+	if claim.TimeStamp > lastTime || claim.TimeStamp < firstTime {
+		return claim, http.StatusForbidden, fmt.Errorf("JWT:Token has expired")
+	}
+	HOST.Log.Println(15, "Get the JWT parameters:", claim.ProjectId, claim.DomainHost, claim.Bucket, claim.BucketDomain)
+	return claim, http.StatusOK, nil
 }
