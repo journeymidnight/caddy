@@ -28,10 +28,11 @@ func Test_CustomDomain(t *testing.T) {
 	domianHost := "www.wojiushixiangshiyishi.xyz"
 
 	status, err := NewCustomDomain(domianHost)
+	defer DelCustomDomain(domianHost)
 	if status != http.StatusOK || err != nil {
 		t.Fatal("Setting user-defined domain name failed:", status)
 	}
-
+	
 	status, err = GetCustomDomain(domianHost)
 	if status != http.StatusOK || err != nil {
 		t.Fatal("Getting user-defined domain name failed:", status)
