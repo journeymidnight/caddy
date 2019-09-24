@@ -17,7 +17,6 @@ const (
 	TEST_KEY_SPECIAL = "testputspecial:!@$%^&*()_+=-;?><| "
 	TEST_VALUE       = "valueput"
 	End_Point        = "s3.test.com"
-	Domain_Host      = "www.wojiushixiangshiyishi.xyz"
 )
 
 func NewS3() *S3Client {
