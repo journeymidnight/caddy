@@ -34,6 +34,7 @@ require (
 	github.com/hashicorp/go-syslog v0.0.0-20170829120034-326bf4a7f709
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/jimstudt/http-authentication v0.0.0-20140401203705-3eca13d6893a
+	github.com/journeymidnight/aws-sdk-go v1.17.5
 	github.com/klauspost/cpuid v0.0.0-20180102081000-ae832f27941a
 	github.com/lucas-clemente/aes12 v0.0.0-20171027163421-cd47fb39b79f // indirect
 	github.com/lucas-clemente/quic-go v0.11.1
