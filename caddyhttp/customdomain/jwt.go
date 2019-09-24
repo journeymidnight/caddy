@@ -1,8 +1,8 @@
-package handle
+package customdomain
 
 import (
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
 	"net/http"
 	"strings"
 	"time"
@@ -24,26 +24,26 @@ type CustomerInfo struct {
 	BucketDomain string `json:"bucket_domain"`
 }
 
-func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, status int, err error) {
-	HOST.Log.Println(10, "Enter get method from JWT")
+func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, err error) {
+	DOMAIN.Log.Println(10, "Enter get method from JWT")
 	tokenString := r.Header.Get("Authorization")
 	tokenStrings := strings.Split(tokenString, " ")
 	token, err := jwt.ParseWithClaims(tokenStrings[1], &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
 	})
 	if err != nil {
-		return claim, http.StatusForbidden, err
+		return claim, ErrAccessDenied
 	}
 	claim, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
-		return claim, http.StatusInternalServerError, fmt.Errorf("JWT:Parameter conversion error")
+		return claim, ErrInvalidJwtParams
 	}
 	time := time.Now().Unix()
 	lastTime := time + MINITETIME
 	firstTime := time - DAYTIME
 	if claim.TimeStamp > lastTime || claim.TimeStamp < firstTime {
-		return claim, http.StatusForbidden, fmt.Errorf("JWT:Token has expired")
+		return claim, ErrExpiredToken
 	}
-	HOST.Log.Println(15, "Get the JWT parameters:", claim.ProjectId, claim.DomainHost, claim.Bucket, claim.BucketDomain)
-	return claim, http.StatusOK, nil
+	DOMAIN.Log.Println(15, "Get the JWT parameters:", claim.ProjectId, claim.DomainHost, claim.Bucket, claim.BucketDomain)
+	return claim, nil
 }

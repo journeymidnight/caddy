@@ -2,8 +2,8 @@ package tidbclient
 
 import (
 	"database/sql"
-	"fmt"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/client/types"
+	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
+	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/types"
 )
 
 func (DB *TidbClient) GetDomainOfBucketDomain(domainHost string) (info types.DomainInfo, err error) {
@@ -22,7 +22,7 @@ func (DB *TidbClient) GetBucket(bucket string) (uid string, err error) {
 	row := DB.ClientS3.QueryRow(sql, args...)
 	err = row.Scan(&uid)
 	if err != nil {
-		return
+		return uid, ErrNoSuchKey
 	}
 	return uid, nil
 }
@@ -34,7 +34,7 @@ func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types
 	row := DB.ClientBusiness.QueryRow(sql, args...)
 	err = row.Scan(&pid, &domainH, &domainB)
 	if err != nil {
-		return info, fmt.Errorf("No such key!")
+		return info, ErrNoSuchKey
 	}
 	info.ProjectId = pid
 	info.DomainHost = domainH
@@ -47,7 +47,7 @@ func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string) (inf
 	args := []interface{}{projectId, bucketDomain}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
-		return
+		return info, ErrInvalidSql
 	}
 	for rows.Next() {
 		ICustomDomain := types.DomainInfo{}
@@ -55,7 +55,26 @@ func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string) (inf
 		info = append(info, ICustomDomain)
 	}
 	if err != nil {
-		return
+		return info, ErrNoSuchKey
+	}
+	defer rows.Close()
+	return
+}
+
+func (DB *TidbClient) GetAllDomainInfos(projectId string) (info []types.DomainInfo, err error) {
+	sql := "select * from custom_domain where project_id=?"
+	args := []interface{}{projectId}
+	rows, err := DB.ClientBusiness.Query(sql, args...)
+	if err != nil {
+		return info, ErrInvalidSql
+	}
+	for rows.Next() {
+		ICustomDomain := types.DomainInfo{}
+		err = rows.Scan(&ICustomDomain.ProjectId, &ICustomDomain.DomainHost, &ICustomDomain.DomainBucket)
+		info = append(info, ICustomDomain)
+	}
+	if err != nil {
+		return info, ErrNoSuchKey
 	}
 	defer rows.Close()
 	return
@@ -66,7 +85,7 @@ func (DB *TidbClient) InsertDomain(info types.DomainInfo) (err error) {
 	var tx interface{}
 	tx, err = DB.ClientBusiness.Begin()
 	if err != nil {
-		return err
+		return ErrSqlTransaction
 	}
 	defer func() {
 		if err == nil {
@@ -80,7 +99,7 @@ func (DB *TidbClient) InsertDomain(info types.DomainInfo) (err error) {
 	sql, args := info.InsertDomain()
 	_, err = sqlTx.Exec(sql, args...)
 	if err != nil {
-		return err
+		return ErrSqlInsert
 	}
 	return nil
 }
@@ -90,7 +109,7 @@ func (DB *TidbClient) DelDomain(info types.DomainInfo) (err error) {
 	var tx interface{}
 	tx, err = DB.ClientBusiness.Begin()
 	if err != nil {
-		return err
+		return ErrSqlTransaction
 	}
 	defer func() {
 		if err == nil {

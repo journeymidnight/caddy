@@ -17,6 +17,11 @@ func (c *DomainInfo) GetDomain() string {
 	return sql
 }
 
+func (c *DomainInfo) GetAllDomain() string {
+	sql := "select * from custom_domain where project_id=?"
+	return sql
+}
+
 func (c *DomainInfo) InsertDomain() (string, []interface{}) {
 	sql := "insert into custom_domain values(?,?,?)"
 	args := []interface{}{c.ProjectId, c.DomainHost, c.DomainBucket}

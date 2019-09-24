@@ -607,6 +607,8 @@ var directives = []string{
 
 	// directives that add middleware to the stack
 	"caddylog",
+	"customdomain",
+	"domainresolution",
 	"locale", // github.com/simia-tech/caddy-locale
 	"log",
 	"cache", // github.com/nicolasazrak/caddy-cache
@@ -615,7 +617,6 @@ var directives = []string{
 	"minify", // github.com/hacdias/caddy-minify
 	"gzip",
 	"header",
-	"host",
 	"geoip", // github.com/kodnaplakal/caddy-geoip
 	"errors",
 	"authz",        // github.com/casbin/caddy-authz
