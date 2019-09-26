@@ -15,6 +15,7 @@
         db_max_open_conns 10240
         db_conn_max_life_seconds 300
         secret_key hehehehe
+        tls_secret_key hehehehe
     }
 
     log / access.log "{combined}" {
@@ -63,6 +64,7 @@
         db_max_idle_conns 1024
         db_max_open_conns 10240
         db_conn_max_life_seconds 300
+        tls_secret_key hehehehe
     }
 
     log / access.log "{combined}" {

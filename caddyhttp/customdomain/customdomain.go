@@ -16,6 +16,7 @@ type Domain struct {
 	Next             httpserver.Handler
 	CustomDomainFlag string
 	SecretKey        string
+	TlsSecretKey     string
 	Client           *tidbclient.TidbClient
 	Log              *caddylog.Logger
 	Cache            ttlru.Cache

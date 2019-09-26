@@ -42,16 +42,16 @@ func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types
 	return
 }
 
-func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string) (info []types.DomainInfo, err error) {
-	sql := "select * from custom_domain where project_id=? and bucket_domain=?"
-	args := []interface{}{projectId, bucketDomain}
+func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string, tlsSecretKey string) (info []types.DomainInfo, err error) {
+	sql := "select project_id,host_domain,bucket_domain,AES_DECRYPT(tls_domain, ?) from custom_domain where project_id=? and bucket_domain=?"
+	args := []interface{}{tlsSecretKey, projectId, bucketDomain}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return info, ErrInvalidSql
 	}
 	for rows.Next() {
 		ICustomDomain := types.DomainInfo{}
-		err = rows.Scan(&ICustomDomain.ProjectId, &ICustomDomain.DomainHost, &ICustomDomain.DomainBucket)
+		err = rows.Scan(&ICustomDomain.ProjectId, &ICustomDomain.DomainHost, &ICustomDomain.DomainBucket, &ICustomDomain.TlsDomain)
 		info = append(info, ICustomDomain)
 	}
 	if err != nil {
@@ -61,16 +61,16 @@ func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string) (inf
 	return
 }
 
-func (DB *TidbClient) GetAllDomainInfos(projectId string) (info []types.DomainInfo, err error) {
-	sql := "select * from custom_domain where project_id=?"
-	args := []interface{}{projectId}
+func (DB *TidbClient) GetAllDomainInfos(projectId string, tlsSecretKey string) (info []types.DomainInfo, err error) {
+	sql := "select project_id,host_domain,bucket_domain,AES_DECRYPT(tls_domain, ?) from custom_domain where project_id=?"
+	args := []interface{}{tlsSecretKey, projectId}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return info, ErrInvalidSql
 	}
 	for rows.Next() {
 		ICustomDomain := types.DomainInfo{}
-		err = rows.Scan(&ICustomDomain.ProjectId, &ICustomDomain.DomainHost, &ICustomDomain.DomainBucket)
+		err = rows.Scan(&ICustomDomain.ProjectId, &ICustomDomain.DomainHost, &ICustomDomain.DomainBucket, &ICustomDomain.TlsDomain)
 		info = append(info, ICustomDomain)
 	}
 	if err != nil {
@@ -123,7 +123,31 @@ func (DB *TidbClient) DelDomain(info types.DomainInfo) (err error) {
 	sql, args := info.DeleteDomain()
 	_, err = sqlTx.Exec(sql, args...)
 	if err != nil {
-		return err
+		return ErrSqlDelete
+	}
+	return nil
+}
+
+func (DB *TidbClient) UpdateDomainTLS(info types.DomainInfo, tlsSecretKey string) (err error) {
+	var sqlTx *sql.Tx
+	var tx interface{}
+	tx, err = DB.ClientBusiness.Begin()
+	if err != nil {
+		return ErrSqlTransaction
+	}
+	defer func() {
+		if err == nil {
+			err = sqlTx.Commit()
+		}
+		if err != nil {
+			sqlTx.Rollback()
+		}
+	}()
+	sqlTx, _ = tx.(*sql.Tx)
+	sql, args := info.UpdateDomainTls(tlsSecretKey)
+	_, err = sqlTx.Exec(sql, args...)
+	if err != nil {
+		return ErrSqlUpdate
 	}
 	return nil
 }

@@ -20,5 +20,5 @@ type Client interface {
 	DelDomain(info types.DomainInfo) (err error)
 
 	//DomainTls
-	UpdateDomainTls() error
+	UpdateDomainTLS(info types.DomainInfo, secretKey string) (err error)
 }

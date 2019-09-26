@@ -13,10 +13,11 @@ import (
 var DOMAINRESOLUTION DomainResolution
 
 type DomainResolution struct {
-	Next   httpserver.Handler
-	Client *tidbclient.TidbClient
-	Log    *caddylog.Logger
-	Cache  ttlru.Cache
+	Next         httpserver.Handler
+	Client       *tidbclient.TidbClient
+	Log          *caddylog.Logger
+	Cache        ttlru.Cache
+	TlsSecretKey string
 }
 
 func (c DomainResolution) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {

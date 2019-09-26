@@ -24,6 +24,8 @@ const (
 	ErrExpiredToken
 	ErrInvalidRequestMethod
 	ErrJwtParameterParsing
+	ErrFormDataParameterParsing
+	ErrInvalidTls
 	ErrParameterParsing
 	ErrInvalidBucketDomain
 	ErrInvalidBindBucketDomain
@@ -35,7 +37,10 @@ const (
 	ErrSqlTransaction
 	ErrSqlInsert
 	ErrSqlDelete
+	ErrSqlUpdate
 	ErrTooManyHostDomainWithBucket
+	ErrInvalidTlsPem
+	ErrInvalidTlsKey
 )
 
 var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
@@ -52,7 +57,7 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 	ErrInvalidJwtParams: {
 		CaddyErrorCode: "InvalidJwtParams",
 		Description:    "JWT parameter conversion error.",
-		HttpStatusCode: http.StatusInternalServerError,
+		HttpStatusCode: http.StatusConflict,
 	},
 	ErrExpiredToken: {
 		CaddyErrorCode: "ExpiredToken",
@@ -67,6 +72,16 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 	ErrJwtParameterParsing: {
 		CaddyErrorCode: "ErrJwtParameterParsing",
 		Description:    "Parameter parsing carried by JWT failed.",
+		HttpStatusCode: http.StatusBadRequest,
+	},
+	ErrFormDataParameterParsing: {
+		CaddyErrorCode: "ErrFormDataParameterParsing",
+		Description:    "Parameter parsing carried by form-data failed.",
+		HttpStatusCode: http.StatusBadRequest,
+	},
+	ErrInvalidTls: {
+		CaddyErrorCode: "InvalidTlsFailure",
+		Description:    "The public key and key format of the certificate you uploaded is incorrect.",
 		HttpStatusCode: http.StatusBadRequest,
 	},
 	ErrParameterParsing: {
@@ -124,9 +139,24 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 		Description:    "Database query has some exceptions.",
 		HttpStatusCode: http.StatusNotFound,
 	},
+	ErrSqlUpdate: {
+		CaddyErrorCode: "SqlUpdateErr",
+		Description:    "Database query has some exceptions.",
+		HttpStatusCode: http.StatusNotFound,
+	},
 	ErrTooManyHostDomainWithBucket: {
 		CaddyErrorCode: "TooManyHostDomainWithBucket",
 		Description:    "Bind up to 20 custom domain names per bucket.",
+		HttpStatusCode: http.StatusForbidden,
+	},
+	ErrInvalidTlsPem: {
+		CaddyErrorCode: "InvalidTlsPem",
+		Description:    "The upload certificate is malformed or does not match the bound domain name.",
+		HttpStatusCode: http.StatusForbidden,
+	},
+	ErrInvalidTlsKey: {
+		CaddyErrorCode: "InvalidTlsKey",
+		Description:    "Certificate private key error.",
 		HttpStatusCode: http.StatusForbidden,
 	},
 }
