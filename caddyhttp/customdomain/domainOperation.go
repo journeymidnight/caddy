@@ -105,7 +105,7 @@ func NewCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	resultHost.ProjectId = projectId
 	resultHost.DomainHost = domainHost
 	resultHost.DomainBucket = domainBucket
-	err = DOMAIN.Client.InsertDomain(resultHost)
+	err = DOMAIN.Client.InsertDomain(resultHost, DOMAIN.TlsSecretKey)
 	if err != nil {
 		return nil, err
 	}

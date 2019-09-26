@@ -80,7 +80,7 @@ func (DB *TidbClient) GetAllDomainInfos(projectId string, tlsSecretKey string) (
 	return
 }
 
-func (DB *TidbClient) InsertDomain(info types.DomainInfo) (err error) {
+func (DB *TidbClient) InsertDomain(info types.DomainInfo, secretKey string) (err error) {
 	var sqlTx *sql.Tx
 	var tx interface{}
 	tx, err = DB.ClientBusiness.Begin()
@@ -96,7 +96,7 @@ func (DB *TidbClient) InsertDomain(info types.DomainInfo) (err error) {
 		}
 	}()
 	sqlTx, _ = tx.(*sql.Tx)
-	sql, args := info.InsertDomain()
+	sql, args := info.InsertDomain(secretKey)
 	_, err = sqlTx.Exec(sql, args...)
 	if err != nil {
 		return ErrSqlInsert
