@@ -14,11 +14,11 @@ type Client interface {
 	GetDomainOfBucketDomain(domainHost string) (info types.DomainInfo, err error)
 	GetBucket(bucket string) (uid string, err error)
 	GetDomain(projectId string, domainHost string) (info types.DomainInfo, err error)
-	GetDomainInfos(projectId string, bucketDomain string) (info []types.DomainInfo, err error)
-	GetAllDomainInfos(projectId string) (info []types.DomainInfo, err error)
-	InsertDomain(info types.DomainInfo) (err error)
+	GetDomainInfos(projectId string, bucketDomain string, tlsSecretKey string) (info []types.DomainInfo, err error)
+	GetAllDomainInfos(projectId string, tlsSecretKey string) (info []types.DomainInfo, err error)
+	InsertDomain(info types.DomainInfo, secretKey string) (err error)
 	DelDomain(info types.DomainInfo) (err error)
 
 	//DomainTls
-	UpdateDomainTLS(info types.DomainInfo, secretKey string) (err error)
+	UpdateDomainTLS(info types.DomainInfo, tlsSecretKey string) (err error)
 }
