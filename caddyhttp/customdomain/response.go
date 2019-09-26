@@ -21,9 +21,10 @@ type CustomDomainInfo struct {
 }
 
 type CustomDomain struct {
-	ProjectId    string `xml:"project_id"`
-	HostDomain   string `xml:"host_domain"`
-	BucketDomain string `xml:"bucket_domain"`
+	ProjectId       string `xml:"project_id"`
+	HostDomain      string `xml:"host_domain"`
+	BucketDomain    string `xml:"bucket_domain"`
+	TlsDomainSwitch string `xml:"tls_domain_switch"`
 }
 
 type ResponseWithDomainHost struct {
@@ -39,6 +40,11 @@ func GetResponseWithDomainInfo(data []types.DomainInfo, lastModified time.Time) 
 		custom.ProjectId = data.ProjectId
 		custom.BucketDomain = data.DomainBucket
 		custom.HostDomain = data.DomainHost
+		if data.TlsDomain != "" {
+			custom.TlsDomainSwitch = "true"
+		} else {
+			custom.TlsDomainSwitch = "false"
+		}
 		customDomains = append(customDomains, custom)
 	}
 	customDomainInfo := CustomDomainInfo{}

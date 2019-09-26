@@ -20,14 +20,11 @@ func DomainOperation(r *http.Request, flag string, claim *Claims) (response []by
 	case "DelCustomDomain":
 		err = DelCustomDomain(r, claim)
 		return
-	case "TlsNewCustomDomain":
-		err = TlsNewCustomDomain(r, claim)
-		return
-	case "TlsEditCustomDomain":
-		err = TlsEditCustomDomain(r, claim)
+	case "TlsPutCustomDomain":
+		err = PutTlsCustomDomain(r, claim)
 		return
 	case "TlsDelCustomDomain":
-		err = TlsDelCustomDomain(r, claim)
+		err = DelTlsCustomDomain(r, claim)
 		return
 	default:
 		return
@@ -48,9 +45,9 @@ func GetCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	var object []types.DomainInfo
 	var err error
 	if bucketDomain == "" {
-		object, err = DOMAIN.Client.GetAllDomainInfos(projectId)
+		object, err = DOMAIN.Client.GetAllDomainInfos(projectId, DOMAIN.TlsSecretKey)
 	} else {
-		object, err = DOMAIN.Client.GetDomainInfos(projectId, bucketDomain)
+		object, err = DOMAIN.Client.GetDomainInfos(projectId, bucketDomain, DOMAIN.TlsSecretKey)
 	}
 	if err != nil {
 		return nil, err
@@ -87,7 +84,7 @@ func NewCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	if validPID != projectId {
 		return nil, ErrInvalidBucketPermission
 	}
-	validLength, err := DOMAIN.Client.GetDomainInfos(projectId, domainBucket)
+	validLength, err := DOMAIN.Client.GetDomainInfos(projectId, domainBucket, DOMAIN.TlsSecretKey)
 	if len(validLength) >= 20 {
 		return nil, ErrTooManyHostDomainWithBucket
 	}
@@ -135,17 +132,55 @@ func DelCustomDomain(r *http.Request, claim *Claims) error {
 	return nil
 }
 
-//TODO
-func TlsNewCustomDomain(r *http.Request, claim *Claims) (err error) {
-	return
+func PutTlsCustomDomain(r *http.Request, claim *Claims) error {
+	if r.Method != "POST" {
+		return ErrInvalidRequestMethod
+	}
+	DOMAIN.Log.Println(10, "Enter put custom domain tls")
+	projectId := claim.ProjectId
+	domainHost := claim.DomainHost
+	if projectId == "" || domainHost == "" {
+		return ErrJwtParameterParsing
+	}
+	resultHost, err := DOMAIN.Client.GetDomain(projectId, domainHost)
+	if err != nil {
+		return err
+	}
+	tls, tlsKey, err := GetTlsFromFormData(r)
+	if err != nil {
+		return err
+	}
+	err = ValidTls(domainHost, tls, tlsKey)
+	if err != nil {
+		return err
+	}
+	resultHost.TlsDomain = tls
+	resultHost.TlsDomainKey = tlsKey
+	err = DOMAIN.Client.UpdateDomainTLS(resultHost, DOMAIN.TlsSecretKey)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-//TODO
-func TlsEditCustomDomain(r *http.Request, claim *Claims) (err error) {
-	return
-}
-
-//TODO
-func TlsDelCustomDomain(r *http.Request, claim *Claims) (err error) {
-	return
+func DelTlsCustomDomain(r *http.Request, claim *Claims) (err error) {
+	if r.Method != "DELETE" {
+		return ErrInvalidRequestMethod
+	}
+	DOMAIN.Log.Println(10, "Enter delete custom domain tls")
+	projectId := claim.ProjectId
+	domainHost := claim.DomainHost
+	if projectId == "" || domainHost == "" {
+		return ErrJwtParameterParsing
+	}
+	var info types.DomainInfo
+	info.ProjectId = projectId
+	info.DomainHost = domainHost
+	info.TlsDomain = ""
+	info.TlsDomainKey = ""
+	err = DOMAIN.Client.UpdateDomainTLS(info, DOMAIN.TlsSecretKey)
+	if err != nil {
+		return err
+	}
+	return nil
 }
