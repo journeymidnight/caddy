@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const DNSSERVICE = "114.114.114.114"
+var DnsServer = []string{"1.2.4.8", "210.2.4.8", "101.226.4.6", "123.125.81.6", "223.5.5.5", "223.6.6.6", "8.8.8.8", "8.8.4.4", "208.67.222.222", "208.67.220.220", "208.67.222.220", "208.67.220.222"}
 
 func Resolution(r *http.Request) (err error) {
 	DOMAINRESOLUTION.Log.Println(10, "Enter domain resolution")
@@ -17,12 +17,16 @@ func Resolution(r *http.Request) (err error) {
 	validDns, ok := DOMAINRESOLUTION.Cache.Get(rHost)
 	if ok != true {
 		DOMAINRESOLUTION.Log.Println(20, "Failed to find cache! ")
-		dst, err := CNAME(r.Host, DNSSERVICE)
-		if err != nil {
-			return ErrInvalidDnsResolution
+		var dnsdst []string
+		for _, v := range DnsServer {
+			dst, err := CNAME(r.Host, v)
+			if err != nil {
+				return ErrInvalidDnsResolution
+			}
+			dnsdst = append(dnsdst, dst[0])
 		}
-		DOMAINRESOLUTION.Log.Println(10, "The domain name resolution address of the CNAME is:", dst)
-		for _, h := range dst {
+		DOMAINRESOLUTION.Log.Println(10, "The domain name resolution address of the CNAME is:", dnsdst)
+		for _, h := range dnsdst {
 			var host string
 			if strings.HasSuffix(h, ".") {
 				host = h[0 : len(h)-1]
@@ -60,7 +64,7 @@ func CNAME(src string, dnsService string) (dst []string, err error) {
 		Timeout: 5 * time.Second,
 	}
 	m := dns.Msg{}
-	m.SetQuestion(src+".", dns.TypeA)
+	m.SetQuestion(src+".", dns.TypeCNAME)
 	r, _, err := c.Exchange(&m, dnsService+":53")
 	if err != nil {
 		return
