@@ -16,7 +16,7 @@ func PostTlsPem(domainHost string) error {
 	if err != nil {
 		return err
 	}
-	url := "http://s3.test.com/?x-oss-action=TlsPutCustomDomain"
+	url := "http://s3.test.com/?x-oss-action=PutCertificate"
 	params := map[string]string{
 		"tls_domain": `-----BEGIN CERTIFICATE-----
 MIIEGDCCAoCgAwIBAgIRAKNl6oB3KJ97B7a8ANGw9J0wDQYJKoZIhvcNAQELBQAw
@@ -116,7 +116,7 @@ func NewFileUploadRequest(url string, params map[string]string) (*http.Request, 
 }
 
 func DelTlsPem(domainHost string) (int, error) {
-	url := "http://" + End_Point + "/?x-oss-action=DelCustomDomain"
+	url := "http://" + End_Point + "/?x-oss-action=DelCertificate"
 	token, err := GetJwt(domainHost)
 	if err != nil {
 		return 0, err

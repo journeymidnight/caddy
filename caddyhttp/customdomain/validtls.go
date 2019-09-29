@@ -35,25 +35,25 @@ func ValidTls(hostDomain, tlsCrt, tlsKey string) error {
 		return ErrInvalidTlsPem
 	}
 	dnsName := pub.DNSNames
-	isValidKey := false
+	isHostMatched := false
 	for _, host := range dnsName {
 		if hostDomain == host {
-			isValidKey = true
+			isHostMatched = true
 			break
 		}
 		ht := strings.HasPrefix(host, "*")
 		if ht {
 			hd := strings.Split(hostDomain, ".")
 			hd[0] = "*"
-			hdf := strings.Join(hd, "")
-			if hdf != host {
-				isValidKey = true
+			hdf := strings.Join(hd, ".")
+			if hdf == host {
+				isHostMatched = true
 				break
 			}
 		}
 	}
 	DOMAIN.Log.Printf(20, "Got a %T with dns name : %v %v", pub, dnsName, hostDomain)
-	if !isValidKey {
+	if !isHostMatched {
 		return ErrInvalidTlsPem
 	}
 	_, err = tls.X509KeyPair([]byte(tlsCrt), []byte(tlsKey))

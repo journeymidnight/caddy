@@ -20,11 +20,11 @@ func DomainOperation(r *http.Request, flag string, claim *Claims) (response []by
 	case "DelCustomDomain":
 		err = DelCustomDomain(r, claim)
 		return
-	case "TlsPutCustomDomain":
-		err = PutTlsCustomDomain(r, claim)
+	case "PutCertificate":
+		err = PutCertificate(r, claim)
 		return
-	case "TlsDelCustomDomain":
-		err = DelTlsCustomDomain(r, claim)
+	case "DelCertificate":
+		err = DelCertificate(r, claim)
 		return
 	default:
 		return
@@ -132,7 +132,7 @@ func DelCustomDomain(r *http.Request, claim *Claims) error {
 	return nil
 }
 
-func PutTlsCustomDomain(r *http.Request, claim *Claims) error {
+func PutCertificate(r *http.Request, claim *Claims) error {
 	if r.Method != "POST" {
 		return ErrInvalidRequestMethod
 	}
@@ -163,7 +163,7 @@ func PutTlsCustomDomain(r *http.Request, claim *Claims) error {
 	return nil
 }
 
-func DelTlsCustomDomain(r *http.Request, claim *Claims) (err error) {
+func DelCertificate(r *http.Request, claim *Claims) (err error) {
 	if r.Method != "DELETE" {
 		return ErrInvalidRequestMethod
 	}
