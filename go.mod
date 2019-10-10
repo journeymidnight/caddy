@@ -26,6 +26,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v0.0.0-20170228161531-259d2a102b87
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
@@ -33,6 +34,7 @@ require (
 	github.com/hashicorp/go-syslog v0.0.0-20170829120034-326bf4a7f709
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/jimstudt/http-authentication v0.0.0-20140401203705-3eca13d6893a
+	github.com/journeymidnight/aws-sdk-go v1.17.5
 	github.com/klauspost/cpuid v0.0.0-20180102081000-ae832f27941a
 	github.com/lucas-clemente/aes12 v0.0.0-20171027163421-cd47fb39b79f // indirect
 	github.com/lucas-clemente/quic-go v0.11.1
@@ -48,4 +50,5 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-00010101000000-000000000000
 	gopkg.in/square/go-jose.v2 v2.0.0-00010101000000-000000000000 // indirect
 	gopkg.in/yaml.v2 v2.2.1
+	zvelo.io/ttlru v1.0.9
 )
