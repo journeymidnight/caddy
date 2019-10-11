@@ -43,7 +43,7 @@ func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types
 }
 
 func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string, tlsSecretKey string) (info []types.DomainInfo, err error) {
-	sql := "select project_id,host_domain,bucket_domain,AES_DECRYPT(tls_domain, ?) from custom_domain where project_id=? and bucket_domain=?"
+	sql := "select project_id,host_domain,bucket_domain,IFNULL(AES_DECRYPT(tls_domain, ?),'') from custom_domain where project_id=? and bucket_domain=?"
 	args := []interface{}{tlsSecretKey, projectId, bucketDomain}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
@@ -62,7 +62,7 @@ func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string, tlsS
 }
 
 func (DB *TidbClient) GetAllDomainInfos(projectId string, tlsSecretKey string) (info []types.DomainInfo, err error) {
-	sql := "select project_id,host_domain,bucket_domain,AES_DECRYPT(tls_domain, ?) from custom_domain where project_id=?"
+	sql := "select project_id,host_domain,bucket_domain,IFNULL(AES_DECRYPT(tls_domain, ?),'') from custom_domain where project_id=?"
 	args := []interface{}{tlsSecretKey, projectId}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
