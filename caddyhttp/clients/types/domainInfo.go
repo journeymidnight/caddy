@@ -20,7 +20,7 @@ func (c *DomainInfo) GetDomain() string {
 }
 
 func (c *DomainInfo) InsertDomain(secretKey string) (string, []interface{}) {
-	sql := "insert into custom_domain values(?,?,?,AES_ENCRYPT(?, ?),AES_ENCRYPT(?, ?))"
+	sql := "insert into custom_domain(project_id,host_domain,bucket_domain,tls_domain,tls_domain_key) values(?,?,?,AES_ENCRYPT(?, ?),AES_ENCRYPT(?, ?))"
 	args := []interface{}{c.ProjectId, c.DomainHost, c.DomainBucket, c.TlsDomain, secretKey, c.TlsDomainKey, secretKey}
 	return sql, args
 }
