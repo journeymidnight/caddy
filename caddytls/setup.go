@@ -19,6 +19,7 @@ import (
 	"crypto/tls"
 	"encoding/pem"
 	"fmt"
+	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -223,9 +224,68 @@ func setupTLS(c *caddy.Controller) error {
 				}
 				parts[0] = "*"
 				config.Hostname = strings.Join(parts, ".")
+			case "tls_db":
+				if !c.NextArg() {
+					return c.Errf("Caddy database does not match: '%s'", c.ArgErr())
+				}
+				config.CaddySource = c.Val()
+				break
+			case "tls_secret_key":
+				if !c.NextArg() {
+					return c.Errf("Certificate key does not match: '%s'", c.ArgErr())
+				}
+				config.SecretKey = c.Val()
+			case "default_pem":
+				if !c.NextArg() {
+					return c.Errf("Certificate key does not match: '%s'", c.ArgErr())
+				}
+				config.DefaultPem = c.Val()
+			case "default_pem_key":
+				if !c.NextArg() {
+					return c.Errf("Certificate key does not match: '%s'", c.ArgErr())
+				}
+				config.DefaultPemKey = c.Val()
+			case "db_max_idle_conns":
+				if !c.NextArg() {
+					return c.Errf("Wrong key database max idle connections: '%s'", c.ArgErr())
+				}
+				int, err := strconv.Atoi(c.Val())
+				if err != nil {
+					return c.Errf("Wrong key database max idle connections: '%s'", err)
+				}
+				config.DB.DBMaxIdleConns = int
+			case "db_max_open_conns":
+				if !c.NextArg() {
+					return c.Errf("Wrong key database max open connections: '%s'", c.ArgErr())
+				}
+				int, err := strconv.Atoi(c.Val())
+				if err != nil {
+					return c.Errf("Wrong key database max open connections: '%s'", err)
+				}
+				config.DB.DBMaxOpenConns = int
+			case "db_conn_max_life_seconds":
+				if !c.NextArg() {
+					return c.Errf("Wrong key database max connection life second: '%s'", c.ArgErr())
+				}
+				int, err := strconv.Atoi(c.Val())
+				if err != nil {
+					return c.Errf("Wrong key database max connection life second: '%s'", err)
+				}
+				config.DB.DBConnMaxLifeSeconds = int
 			default:
 				return c.Errf("Unknown subdirective '%s'", c.Val())
 			}
+		}
+
+		if config.CaddySource != "" {
+			var client tidbclient.TidbClient
+			client.ClientBusiness = tidbclient.NewTidbClient(config.CaddySource, config.DB)
+			config.Client = &client
+			err := config.CacheManagedCertificateFromDatabaseNoReturn()
+			if err != nil {
+				return c.Errf("Wrong database cache: '%s'", err)
+			}
+			log.Printf("[INFO] Successfully loaded TLS-DB assets from %s", config.CaddySource)
 		}
 
 		// tls requires at least one argument if a block is not opened

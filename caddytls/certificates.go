@@ -199,6 +199,26 @@ func (cfg *Config) cacheUnmanagedCertificatePEMBytes(certBytes, keyBytes []byte)
 	return nil
 }
 
+func (cfg *Config) CacheManagedCertificateFromDatabaseNoReturn() error {
+	certs, err := cfg.Client.GetAllCertificateInfos(cfg.SecretKey)
+	if err != nil {
+		return err
+	}
+	for _, certInfo := range certs {
+		if certInfo.TlsDomain == "" {
+			continue
+		}
+		cert, err := makeCertificateWithOCSP([]byte(certInfo.TlsDomain), []byte(certInfo.TlsDomainKey))
+		if err != nil {
+			return err
+		}
+		cfg.cacheCertificate(cert)
+	}
+	fmt.Println("Load Certificate From Database Succeed!")
+	telemetry.Increment("tls_manual_cert_count")
+	return nil
+}
+
 // makeCertificateFromDiskWithOCSP makes a Certificate by loading the
 // certificate and key files. It fills out all the fields in
 // the certificate except for the Managed and OnDemand flags.
