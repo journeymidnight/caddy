@@ -19,6 +19,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
 	"io/ioutil"
 
 	"net/url"
@@ -142,6 +143,13 @@ type Config struct {
 
 	certCache *certificateCache // pointer to the Instance's certificate store
 	tlsConfig *tls.Config       // the final tls.Config created with buildStandardTLSConfig()
+
+	CaddySource   string
+	SecretKey     string
+	DefaultPem    string
+	DefaultPemKey string
+	DB            tidbclient.DBInfo
+	Client        *tidbclient.TidbClient
 }
 
 // OnDemandState contains some state relevant for providing
