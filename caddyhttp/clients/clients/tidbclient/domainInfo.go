@@ -151,3 +151,22 @@ func (DB *TidbClient) UpdateDomainTLS(info types.DomainInfo, tlsSecretKey string
 	}
 	return nil
 }
+
+func (DB *TidbClient) GetAllCertificateInfos(tlsSecretKey string) (info []types.DomainInfo, err error) {
+	sql := "select AES_DECRYPT(tls_domain, ?),AES_DECRYPT(tls_domain_key, ?) from custom_domain"
+	args := []interface{}{tlsSecretKey, tlsSecretKey}
+	rows, err := DB.ClientBusiness.Query(sql, args...)
+	if err != nil {
+		return info, ErrInvalidSql
+	}
+	for rows.Next() {
+		ICustomDomain := types.DomainInfo{}
+		err = rows.Scan(&ICustomDomain.TlsDomain, &ICustomDomain.TlsDomainKey)
+		info = append(info, ICustomDomain)
+	}
+	if err != nil {
+		return info, ErrNoSuchKey
+	}
+	defer rows.Close()
+	return
+}
