@@ -220,7 +220,7 @@ func (cfg *Config) CacheManagedCertificateFromDatabaseNoReturn() error {
 	} else {
 		endTime := time.Now().Unix()
 		time := endTime - startTime
-		fmt.Println("Load Certificate From Database Succeed!", time)
+		fmt.Println("Load Certificate From Database Succeed! Spend time:", time, "s")
 		telemetry.Increment("tls_manual_cert_count")
 	}
 	return nil

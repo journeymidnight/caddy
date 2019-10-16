@@ -1,0 +1,111 @@
+:443 {
+    import mime.types
+
+    reload @every 900s
+
+    tls {
+        tls_db root:@tcp(10.5.0.17:4000)/caddy
+        tls_secret_key hehehehe
+        db_max_idle_conns 1024
+        db_max_open_conns 10
+        db_conn_max_life_seconds 300
+    }
+
+    caddylog {
+	    log_path /var/log/caddy/yig-front-caddy.log
+	    log_level 20
+    }
+
+    domainresolution {
+        s3_db root:@tcp(10.5.0.17:4000)/yig
+        caddy_db root:@tcp(10.5.0.17:4000)/caddy
+        db_max_idle_conns 1024
+        db_max_open_conns 10240
+        db_conn_max_life_seconds 300
+        tls_secret_key hehehehe
+    }
+
+    log / access.log "{combined}" {
+        rotate_size 50  # Rotate after 50 MB
+        rotate_age  90  # Keep rotated files for 90 days
+        rotate_keep 20  # Keep at most 20 log files
+        rotate_compress # Compress rotated log files in gzip format
+    }
+
+    errors error.log {
+        rotate_size 50  # Rotate after 50 MB
+        rotate_age  90  # Keep rotated files for 90 days
+        rotate_keep 20  # Keep at most 20 log files
+        rotate_compress # Compress rotated log files in gzip format
+    }
+
+    rewrite {
+        if {?x-oss-process} not ""
+        to /cropimage/{host}{path}
+    }
+
+    proxy / http://127.0.0.1:8080 {
+        header_upstream Host {host}
+		header_upstream X-Real-IP {remote}
+        header_upstream X-Forwarded-For {remote}
+        header_upstream X-Forwarded-Proto {scheme}
+    }
+
+    proxy /cropimage http://127.0.0.1:9001 {
+	    without /cropimage
+	    transparent
+    }
+}
+
+*.s3.test.com:443 https://s3.test.com {
+    import mime.types
+
+    tls /etc/caddy/s3.test.com+1.pem /etc/caddy/s3.test.com+1-key.pem
+
+    caddylog {
+    	log_path /var/log/caddy/yig-front-caddy.log
+    	log_level 20
+    }
+
+    customdomain {
+        custom_domainflag x-oss-action
+        s3_db root:@tcp(10.5.0.17:4000)/yig
+        caddy_db root:@tcp(10.5.0.17:4000)/caddy
+        db_max_idle_conns 1024
+        db_max_open_conns 10240
+        db_conn_max_life_seconds 300
+        secret_key hehehehe
+        tls_secret_key hehehehe
+    }
+
+    log / access.log "{combined}" {
+        rotate_size 50  # Rotate after 50 MB
+        rotate_age  90  # Keep rotated files for 90 days
+        rotate_keep 20  # Keep at most 20 log files
+        rotate_compress # Compress rotated log files in gzip format
+    }
+
+    errors error.log {
+        rotate_size 50  # Rotate after 50 MB
+        rotate_age  90  # Keep rotated files for 90 days
+        rotate_keep 20  # Keep at most 20 log files
+        rotate_compress # Compress rotated log files in gzip format
+    }
+
+    rewrite {
+        if {?x-oss-process} not ""
+        to /cropimage/{host}{path}
+    }
+
+    proxy / http://127.0.0.1:8080 {
+		header_upstream Host {host}
+        header_upstream X-Real-IP {remote}
+        header_upstream X-Forwarded-For {remote}
+        header_upstream X-Forwarded-Proto {scheme}
+	}
+
+	proxy /cropimage http://127.0.0.1:9001 {
+	    without /cropimage
+	    transparent
+	}
+}
