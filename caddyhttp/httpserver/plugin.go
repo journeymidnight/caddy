@@ -373,7 +373,7 @@ func groupSiteConfigsByListenAddr(configs []*SiteConfig) (map[string][]*SiteConf
 		// https://caddy.community/t/wildcard-virtual-domains-with-wildcard-roots/221/5?u=matt
 
 		if caddy.IsCronTab && !conf.TLS.Enabled && conf.Addr.Port == "443" {
-			fmt.Println("Failed to read certificate from database, do not load 443 global module!")
+			fmt.Println("[WARNING] Did not get certificates, do not load custom domain name https listening service!")
 			continue
 		}
 

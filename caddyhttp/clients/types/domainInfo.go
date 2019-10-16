@@ -19,9 +19,9 @@ func (c *DomainInfo) GetDomain() string {
 	return sql
 }
 
-func (c *DomainInfo) InsertDomain(secretKey string) (string, []interface{}) {
+func (c *DomainInfo) InsertDomain(sealKey string) (string, []interface{}) {
 	sql := "insert into custom_domain(project_id,host_domain,bucket_domain,tls_domain,tls_domain_key) values(?,?,?,AES_ENCRYPT(?, ?),AES_ENCRYPT(?, ?))"
-	args := []interface{}{c.ProjectId, c.DomainHost, c.DomainBucket, c.TlsDomain, secretKey, c.TlsDomainKey, secretKey}
+	args := []interface{}{c.ProjectId, c.DomainHost, c.DomainBucket, c.TlsDomain, sealKey, c.TlsDomainKey, sealKey}
 	return sql, args
 }
 
@@ -31,8 +31,8 @@ func (c *DomainInfo) DeleteDomain() (string, []interface{}) {
 	return sql, args
 }
 
-func (c *DomainInfo) UpdateDomainTls(secretKey string) (string, []interface{}) {
+func (c *DomainInfo) UpdateDomainTls(sealKey string) (string, []interface{}) {
 	sql := "update custom_domain set tls_domain=AES_ENCRYPT(?, ?), tls_domain_key= AES_ENCRYPT(?, ?)  where project_id=? and host_domain=?"
-	args := []interface{}{c.TlsDomain, secretKey, c.TlsDomainKey, secretKey, c.ProjectId, c.DomainHost}
+	args := []interface{}{c.TlsDomain, sealKey, c.TlsDomainKey, sealKey, c.ProjectId, c.DomainHost}
 	return sql, args
 }

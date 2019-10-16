@@ -145,7 +145,7 @@ type Config struct {
 	tlsConfig *tls.Config       // the final tls.Config created with buildStandardTLSConfig()
 
 	CaddySource   string
-	SecretKey     string
+	SealKey       string
 	DefaultPem    string
 	DefaultPemKey string
 	DB            tidbclient.DBInfo
