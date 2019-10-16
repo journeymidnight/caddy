@@ -17,6 +17,8 @@ const (
 	TEST_KEY_SPECIAL = "testputspecial:!@$%^&*()_+=-;?><| "
 	TEST_VALUE       = "valueput"
 	End_Point        = "s3.test.com"
+	Project_Id       = "hehehehe"
+	FileDir          = "/etc/caddy/"
 )
 
 func NewS3() *S3Client {

@@ -21,7 +21,7 @@ func GetJwt(domainHost string) (string, error) {
 	// Create the Claims
 	claims := MyCustomClaims{
 		timeStamp,
-		"hehehehe",
+		Project_Id,
 		domainHost,
 		TEST_BUCKET,
 		bucketDomain,

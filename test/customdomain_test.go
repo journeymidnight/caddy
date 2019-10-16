@@ -1,12 +1,16 @@
-package customdomaintest
+package test
 
 import (
 	. "github.com/journeymidnight/yig-front-caddy/test/lib"
 	"net/http"
 	"testing"
+	"time"
 )
 
-const DomainHost = "www.wojiushixiangshiyishi.xyz"
+const (
+	DomainHost = "www.wojiushixiangshiyishi.xyz"
+	TIMEWAIT = 10*time.Second
+)
 
 func Test_CustomDomain(t *testing.T) {
 	sc := NewS3()
@@ -87,7 +91,8 @@ func Test_CustomDomainWithTls(t *testing.T) {
 		t.Fatal("Custom domain Custom domain name add certificate:", status)
 	}
 
-	status, err = CustomDomainAccess(DomainHost)
+	time.Sleep(TIMEWAIT)
+	status, err = CustomDomainAccessWithcert(DomainHost)
 	if status != http.StatusOK || err != nil {
 		t.Fatal("Custom domain access bucket resource failed:", status)
 	}

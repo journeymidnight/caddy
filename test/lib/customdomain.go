@@ -38,3 +38,10 @@ func CustomDomainAccess(domainHost string) (int, error) {
 	status, err := SetRequestWithDomain("GET", url, "")
 	return status, err
 }
+
+func CustomDomainAccessWithcert(domainHost string) (int, error) {
+	url := "https://" + domainHost + "/" + TEST_KEY
+	fmt.Println("Custom domain access path", url)
+	status, err := SetRequestWithDomain("GET", url, "")
+	return status, err
+}
