@@ -19,6 +19,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/journeymidnight/yig-front-caddy"
+	"github.com/journeymidnight/yig-front-caddy/caddytls"
+	"github.com/journeymidnight/yig-front-caddy/telemetry"
+	"github.com/klauspost/cpuid"
+	"github.com/xenolf/lego/acme"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"io/ioutil"
 	"log"
@@ -27,14 +34,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-
-	"github.com/google/uuid"
-	"github.com/journeymidnight/yig-front-caddy"
-	"github.com/journeymidnight/yig-front-caddy/caddytls"
-	"github.com/journeymidnight/yig-front-caddy/telemetry"
-	"github.com/klauspost/cpuid"
-	"github.com/xenolf/lego/acme"
-	"gopkg.in/natefinch/lumberjack.v2"
 
 	_ "github.com/journeymidnight/yig-front-caddy/caddyhttp" // plug in the HTTP server type
 	// This is where other plugins get plugged in (imported)
@@ -139,6 +138,11 @@ func Run() {
 
 	// Get Caddyfile input
 	caddyfileinput, err := caddy.LoadCaddyfile(serverType)
+	if err != nil {
+		mustLogFatalf("%v", err)
+	}
+
+	err = caddy.CertificateCron(caddyfileinput)
 	if err != nil {
 		mustLogFatalf("%v", err)
 	}

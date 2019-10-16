@@ -24,6 +24,8 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/telemetry"
 )
 
+const TIMEFLAG = "reload"
+
 // Parse parses the input just enough to group tokens, in
 // order, by server block. No further parsing is performed.
 // Server blocks are returned in the order in which they appear.
@@ -407,6 +409,9 @@ func (p *parser) validDirective(dir string) bool {
 		if d == dir {
 			return true
 		}
+	}
+	if dir == TIMEFLAG {
+		return true
 	}
 	return false
 }
