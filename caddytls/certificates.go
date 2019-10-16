@@ -200,6 +200,7 @@ func (cfg *Config) cacheUnmanagedCertificatePEMBytes(certBytes, keyBytes []byte)
 }
 
 func (cfg *Config) CacheManagedCertificateFromDatabaseNoReturn() error {
+	startTime := time.Now().Unix()
 	certs, err := cfg.Client.GetAllCertificateInfos(cfg.SecretKey)
 	if err != nil {
 		return err
@@ -214,8 +215,14 @@ func (cfg *Config) CacheManagedCertificateFromDatabaseNoReturn() error {
 		}
 		cfg.cacheCertificate(cert)
 	}
-	fmt.Println("Load Certificate From Database Succeed!")
-	telemetry.Increment("tls_manual_cert_count")
+	if len(cfg.Certificates) == 0 {
+		cfg.Enabled = false
+	} else {
+		endTime := time.Now().Unix()
+		time := endTime - startTime
+		fmt.Println("Load Certificate From Database Succeed!", time)
+		telemetry.Increment("tls_manual_cert_count")
+	}
 	return nil
 }
 
