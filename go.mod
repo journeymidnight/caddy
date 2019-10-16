@@ -43,6 +43,7 @@ require (
 	github.com/naoina/go-stringutil v0.1.0
 	github.com/naoina/toml v0.1.1
 	github.com/prometheus/client_golang v1.0.0
+	github.com/robfig/cron/v3 v3.0.0
 	github.com/russross/blackfriday v0.0.0-20170610170232-067529f716f4
 	github.com/xenolf/lego v0.0.0-20181204200439-4e842a5eb6dc
 	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25

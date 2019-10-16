@@ -372,6 +372,11 @@ func groupSiteConfigsByListenAddr(configs []*SiteConfig) (map[string][]*SiteConf
 		// would prevent outsiders from even connecting; but that was problematic:
 		// https://caddy.community/t/wildcard-virtual-domains-with-wildcard-roots/221/5?u=matt
 
+		if caddy.IsCronTab && !conf.TLS.Enabled && conf.Addr.Port == "443" {
+			fmt.Println("Failed to read certificate from database, do not load 443 global module!")
+			continue
+		}
+
 		if conf.Addr.Port == "" {
 			conf.Addr.Port = Port
 		}
