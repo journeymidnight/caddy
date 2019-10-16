@@ -76,7 +76,7 @@ func NewFileUploadRequest(url string, params map[string]string) (*http.Request, 
 }
 
 func DelTlsPem(domainHost string) (int, error) {
-	url := "http://" + End_Point + "/?x-oss-action=DelCertificate"
+	url := "https://" + End_Point + "/?x-oss-action=DelCertificate"
 	token, err := GetJwt(domainHost)
 	if err != nil {
 		return 0, err

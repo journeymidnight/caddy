@@ -201,7 +201,7 @@ func (cfg *Config) cacheUnmanagedCertificatePEMBytes(certBytes, keyBytes []byte)
 
 func (cfg *Config) CacheManagedCertificateFromDatabaseNoReturn() error {
 	startTime := time.Now().Unix()
-	certs, err := cfg.Client.GetAllCertificateInfos(cfg.SecretKey)
+	certs, err := cfg.Client.GetAllCertificateInfos(cfg.SealKey)
 	if err != nil {
 		return err
 	}
