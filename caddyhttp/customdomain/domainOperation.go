@@ -45,9 +45,9 @@ func GetCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	var object []types.DomainInfo
 	var err error
 	if bucketDomain == "" {
-		object, err = DOMAIN.Client.GetAllDomainInfos(projectId, DOMAIN.TlsSecretKey)
+		object, err = DOMAIN.Client.GetAllDomainInfos(projectId, DOMAIN.SealKey)
 	} else {
-		object, err = DOMAIN.Client.GetDomainInfos(projectId, bucketDomain, DOMAIN.TlsSecretKey)
+		object, err = DOMAIN.Client.GetDomainInfos(projectId, bucketDomain, DOMAIN.SealKey)
 	}
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func NewCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	if validPID != projectId {
 		return nil, ErrInvalidBucketPermission
 	}
-	validLength, err := DOMAIN.Client.GetDomainInfos(projectId, domainBucket, DOMAIN.TlsSecretKey)
+	validLength, err := DOMAIN.Client.GetDomainInfos(projectId, domainBucket, DOMAIN.SealKey)
 	if len(validLength) >= 20 {
 		return nil, ErrTooManyHostDomainWithBucket
 	}
@@ -105,7 +105,7 @@ func NewCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	resultHost.ProjectId = projectId
 	resultHost.DomainHost = domainHost
 	resultHost.DomainBucket = domainBucket
-	err = DOMAIN.Client.InsertDomain(resultHost, DOMAIN.TlsSecretKey)
+	err = DOMAIN.Client.InsertDomain(resultHost, DOMAIN.SealKey)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func PutCertificate(r *http.Request, claim *Claims) error {
 	}
 	resultHost.TlsDomain = tls
 	resultHost.TlsDomainKey = tlsKey
-	err = DOMAIN.Client.UpdateDomainTLS(resultHost, DOMAIN.TlsSecretKey)
+	err = DOMAIN.Client.UpdateDomainTLS(resultHost, DOMAIN.SealKey)
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func DelCertificate(r *http.Request, claim *Claims) (err error) {
 	info.DomainHost = domainHost
 	info.TlsDomain = ""
 	info.TlsDomainKey = ""
-	err = DOMAIN.Client.UpdateDomainTLS(info, DOMAIN.TlsSecretKey)
+	err = DOMAIN.Client.UpdateDomainTLS(info, DOMAIN.SealKey)
 	if err != nil {
 		return err
 	}

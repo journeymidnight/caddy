@@ -18,7 +18,7 @@ func init() {
 
 // setup configures a new host middleware instance.
 func setup(c *caddy.Controller) error {
-	s3Source, caddySource, db, customDomainFlag, secretKey, tlsSecretKey, err := hostParse(c)
+	s3Source, caddySource, db, customDomainFlag, secretKey, sealKey, err := hostParse(c)
 	if err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func setup(c *caddy.Controller) error {
 			Next:             next,
 			CustomDomainFlag: customDomainFlag,
 			SecretKey:        secretKey,
-			TlsSecretKey:     tlsSecretKey,
+			SealKey:          sealKey,
 			Client:           tidbclient.NewCustomDomainClient(s3Source, caddySource, db),
 			Cache:            ttlru.New(1024, ttlru.WithTTL(10*time.Minute)),
 		}
@@ -35,7 +35,7 @@ func setup(c *caddy.Controller) error {
 	return nil
 }
 
-func hostParse(c *caddy.Controller) (s3Source string, caddySource string, db tidbclient.DBInfo, customDomainFlag string, secretKey string, tlsSecretKey string, err error) {
+func hostParse(c *caddy.Controller) (s3Source string, caddySource string, db tidbclient.DBInfo, customDomainFlag string, secretKey string, sealKey string, err error) {
 	for c.Next() {
 		for c.NextBlock() {
 			ext := c.Val()
@@ -90,11 +90,11 @@ func hostParse(c *caddy.Controller) (s3Source string, caddySource string, db tid
 					return "", "", db, "", "", "", c.ArgErr()
 				}
 				secretKey = c.Val()
-			case "tls_secret_key":
+			case "seal_key":
 				if !c.NextArg() {
 					return "", "", db, "", "", "", c.ArgErr()
 				}
-				tlsSecretKey = c.Val()
+				sealKey = c.Val()
 			default:
 				return "", "", db, "", "", "", c.ArgErr()
 			}

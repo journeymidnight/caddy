@@ -42,9 +42,9 @@ func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types
 	return
 }
 
-func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string, tlsSecretKey string) (info []types.DomainInfo, err error) {
+func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string, sealKey string) (info []types.DomainInfo, err error) {
 	sql := "select project_id,host_domain,bucket_domain,IFNULL(AES_DECRYPT(tls_domain, ?),'') from custom_domain where project_id=? and bucket_domain=?"
-	args := []interface{}{tlsSecretKey, projectId, bucketDomain}
+	args := []interface{}{sealKey, projectId, bucketDomain}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return info, ErrInvalidSql
@@ -61,9 +61,9 @@ func (DB *TidbClient) GetDomainInfos(projectId string, bucketDomain string, tlsS
 	return
 }
 
-func (DB *TidbClient) GetAllDomainInfos(projectId string, tlsSecretKey string) (info []types.DomainInfo, err error) {
+func (DB *TidbClient) GetAllDomainInfos(projectId string, sealKey string) (info []types.DomainInfo, err error) {
 	sql := "select project_id,host_domain,bucket_domain,IFNULL(AES_DECRYPT(tls_domain, ?),'') from custom_domain where project_id=?"
-	args := []interface{}{tlsSecretKey, projectId}
+	args := []interface{}{sealKey, projectId}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return info, ErrInvalidSql
@@ -80,7 +80,7 @@ func (DB *TidbClient) GetAllDomainInfos(projectId string, tlsSecretKey string) (
 	return
 }
 
-func (DB *TidbClient) InsertDomain(info types.DomainInfo, secretKey string) (err error) {
+func (DB *TidbClient) InsertDomain(info types.DomainInfo, sealKey string) (err error) {
 	var sqlTx *sql.Tx
 	var tx interface{}
 	tx, err = DB.ClientBusiness.Begin()
@@ -96,7 +96,7 @@ func (DB *TidbClient) InsertDomain(info types.DomainInfo, secretKey string) (err
 		}
 	}()
 	sqlTx, _ = tx.(*sql.Tx)
-	sql, args := info.InsertDomain(secretKey)
+	sql, args := info.InsertDomain(sealKey)
 	_, err = sqlTx.Exec(sql, args...)
 	if err != nil {
 		return ErrSqlInsert
@@ -128,7 +128,7 @@ func (DB *TidbClient) DelDomain(info types.DomainInfo) (err error) {
 	return nil
 }
 
-func (DB *TidbClient) UpdateDomainTLS(info types.DomainInfo, tlsSecretKey string) (err error) {
+func (DB *TidbClient) UpdateDomainTLS(info types.DomainInfo, sealKey string) (err error) {
 	var sqlTx *sql.Tx
 	var tx interface{}
 	tx, err = DB.ClientBusiness.Begin()
@@ -144,7 +144,7 @@ func (DB *TidbClient) UpdateDomainTLS(info types.DomainInfo, tlsSecretKey string
 		}
 	}()
 	sqlTx, _ = tx.(*sql.Tx)
-	sql, args := info.UpdateDomainTls(tlsSecretKey)
+	sql, args := info.UpdateDomainTls(sealKey)
 	_, err = sqlTx.Exec(sql, args...)
 	if err != nil {
 		return ErrSqlUpdate
@@ -152,9 +152,9 @@ func (DB *TidbClient) UpdateDomainTLS(info types.DomainInfo, tlsSecretKey string
 	return nil
 }
 
-func (DB *TidbClient) GetAllCertificateInfos(tlsSecretKey string) (info []types.DomainInfo, err error) {
+func (DB *TidbClient) GetAllCertificateInfos(sealKey string) (info []types.DomainInfo, err error) {
 	sql := "select AES_DECRYPT(tls_domain, ?),AES_DECRYPT(tls_domain_key, ?) from custom_domain"
-	args := []interface{}{tlsSecretKey, tlsSecretKey}
+	args := []interface{}{sealKey, sealKey}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return info, ErrInvalidSql
@@ -162,10 +162,10 @@ func (DB *TidbClient) GetAllCertificateInfos(tlsSecretKey string) (info []types.
 	for rows.Next() {
 		ICustomDomain := types.DomainInfo{}
 		err = rows.Scan(&ICustomDomain.TlsDomain, &ICustomDomain.TlsDomainKey)
+		if err != nil {
+			return info, ErrNoSuchKey
+		}
 		info = append(info, ICustomDomain)
-	}
-	if err != nil {
-		return info, ErrNoSuchKey
 	}
 	defer rows.Close()
 	return

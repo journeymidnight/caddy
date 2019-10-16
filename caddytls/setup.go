@@ -230,11 +230,11 @@ func setupTLS(c *caddy.Controller) error {
 				}
 				config.CaddySource = c.Val()
 				break
-			case "tls_secret_key":
+			case "seal_key":
 				if !c.NextArg() {
 					return c.Errf("Certificate key does not match: '%s'", c.ArgErr())
 				}
-				config.SecretKey = c.Val()
+				config.SealKey = c.Val()
 			case "default_pem":
 				if !c.NextArg() {
 					return c.Errf("Certificate key does not match: '%s'", c.ArgErr())
