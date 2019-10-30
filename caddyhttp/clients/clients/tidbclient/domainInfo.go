@@ -153,7 +153,7 @@ func (DB *TidbClient) UpdateDomainTLS(info types.DomainInfo, sealKey string) (er
 }
 
 func (DB *TidbClient) GetAllCertificateInfos(sealKey string) (info []types.DomainInfo, err error) {
-	sql := "select AES_DECRYPT(tls_domain, ?),AES_DECRYPT(tls_domain_key, ?) from custom_domain"
+	sql := "select IFNULL(AES_DECRYPT(tls_domain, ?),''),IFNULL(AES_DECRYPT(tls_domain_key, ?),'') from custom_domain"
 	args := []interface{}{sealKey, sealKey}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
