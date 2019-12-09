@@ -636,6 +636,7 @@ var directives = []string{
 	"cors",   // github.com/captncraig/cors/caddy
 	"nobots", // github.com/Xumeiquer/nobots
 	"mime",
+	"pipa",
 	"login",     // github.com/tarent/loginsrv/caddy
 	"reauth",    // github.com/freman/caddy-reauth
 	"jwt",       // github.com/BTBurke/caddy-jwt

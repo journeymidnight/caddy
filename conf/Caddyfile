@@ -28,9 +28,10 @@
         rotate_compress # Compress rotated log files in gzip format
     }
 
-    rewrite {
-        if {?x-oss-process} not ""
-        to /cropimage/{host}{path}
+    pipa {
+        redis_address redis:6379
+        redis_password hehehehe
+        redis_maxIdle 3
     }
 
     proxy / http://127.0.0.1:8080 {
@@ -38,11 +39,6 @@
 		header_upstream X-Real-IP {remote}
         header_upstream X-Forwarded-For {remote}
         header_upstream X-Forwarded-Proto {scheme}
-    }
-
-    proxy /cropimage http://127.0.0.1:9001 {
-	    without /cropimage
-	    transparent
     }
 }
 
@@ -79,9 +75,10 @@
         rotate_compress # Compress rotated log files in gzip format
     }
 
-    rewrite {
-        if {?x-oss-process} not ""
-        to /cropimage/{host}{path}
+    pipa {
+        redis_address redis:6379
+        redis_password hehehehe
+        redis_maxIdle 3
     }
 
     proxy / http://127.0.0.1:8080 {
@@ -89,10 +86,5 @@
         header_upstream X-Real-IP {remote}
         header_upstream X-Forwarded-For {remote}
         header_upstream X-Forwarded-Proto {scheme}
-    }
-
-    proxy /cropimage http://127.0.0.1:9001 {
-        without /cropimage
-        transparent
     }
 }

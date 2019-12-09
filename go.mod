@@ -26,6 +26,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v0.0.0-20170228161531-259d2a102b87
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568
+	github.com/garyburd/redigo v1.6.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.1
