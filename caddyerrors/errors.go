@@ -41,6 +41,9 @@ const (
 	ErrTooManyHostDomainWithBucket
 	ErrInvalidTlsPem
 	ErrInvalidTlsKey
+	ErrNoRouter
+	ErrTimeout
+	ErrInternalServer
 )
 
 var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
@@ -158,6 +161,21 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 		CaddyErrorCode: "InvalidTlsKey",
 		Description:    "Certificate private key error.",
 		HttpStatusCode: http.StatusForbidden,
+	},
+	ErrNoRouter: {
+		CaddyErrorCode: "NoRouter",
+		Description:    "The specified parameter does not exist.",
+		HttpStatusCode: http.StatusNotFound,
+	},
+	ErrTimeout: {
+		CaddyErrorCode: "Timeout",
+		Description:    "Request timed out.",
+		HttpStatusCode: http.StatusRequestTimeout,
+	},
+	ErrInternalServer: {
+		CaddyErrorCode: "InternalErr",
+		Description:    "Internal server error.",
+		HttpStatusCode: http.StatusInternalServerError,
 	},
 }
 

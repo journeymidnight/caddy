@@ -25,14 +25,14 @@ type Domain struct {
 func (c Domain) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {
 	logger := r.Context().Value("logger").(*helper.Log)
 	c.Log = logger.Logger
-	c.Log.Println(10, "Enter CustomDomain Function", r.Method, r.Host, r.Header, r.URL)
 	DOMAIN = c
 	v := r.URL.Query()
 	flag := v.Get(c.CustomDomainFlag)
 	if flag == "" {
-		c.Log.Println(10, http.StatusOK, r.Method, r.Host, "Successfully linked yig")
+		c.Log.Println(10, "Customdomain:", http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 		return c.Next.ServeHTTP(w, r)
 	}
+	c.Log.Println(10, "Enter CustomDomain Function", r.Method, r.Host, r.Header, r.URL)
 	var claim *Claims
 	claim, err = GetMethodFromJWT(r, c.SecretKey)
 	if err != nil {
