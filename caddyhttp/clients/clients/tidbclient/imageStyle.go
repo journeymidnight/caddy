@@ -79,7 +79,7 @@ func (DB *TidbClient) UpdateStyle(style ImageStyle) (err error) {
 }
 
 func (DB *TidbClient) GetStyles(bucket string) (styles []ImageStyle, err error) {
-	sql := "select style_name,IFNULL(style_code,'') from pipa where bucket_name=?"
+	sql := "select bucket_name,style_name,IFNULL(style_code,'') from pipa where bucket_name=?"
 	args := []interface{}{bucket}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
@@ -87,7 +87,7 @@ func (DB *TidbClient) GetStyles(bucket string) (styles []ImageStyle, err error) 
 	}
 	for rows.Next() {
 		IImageStyle := ImageStyle{}
-		err = rows.Scan(&IImageStyle.StyleName, &IImageStyle.StyleCode)
+		err = rows.Scan(&IImageStyle.Bucket, &IImageStyle.StyleName, &IImageStyle.StyleCode)
 		styles = append(styles, IImageStyle)
 	}
 	if err != nil {
@@ -98,14 +98,14 @@ func (DB *TidbClient) GetStyles(bucket string) (styles []ImageStyle, err error) 
 }
 
 func (DB *TidbClient) GetStyle(bucket string, styleName string) (style ImageStyle, err error) {
-	sql := "select style_name,IFNULL(style_code,'') from pipa where bucket_name=? and style_name=?"
+	sql := "select bucket_name,style_name,IFNULL(style_code,'') from pipa where bucket_name=? and style_name=?"
 	args := []interface{}{bucket, styleName}
 	rows, err := DB.ClientBusiness.Query(sql, args...)
 	if err != nil {
 		return style, ErrInvalidSql
 	}
 	for rows.Next() {
-		err = rows.Scan(&style.StyleName, &style.StyleCode)
+		err = rows.Scan(&style.Bucket, &style.StyleName, &style.StyleCode)
 	}
 	if err != nil {
 		return style, ErrNoSuchKey

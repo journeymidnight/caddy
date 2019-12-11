@@ -35,7 +35,7 @@ func processRequest(r *http.Request, key string) (response []byte, err error) {
 	case "style":
 		response, err = processStyle(r, styleName)
 		return
-	case "new_style":
+	case "put_style":
 		err = putStyle(r, styleName)
 		return
 	case "del_style":
@@ -75,6 +75,9 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 	if err != nil {
 		return
 	}
+	if style.StyleName == "" {
+		return nil,ErrNoSuchKey
+	}
 	urls := strings.Split(r.URL.String(), "?")
 	styleUrl := urls[0] + HEADER + style.StyleCode
 	ch := make(chan result)
@@ -92,7 +95,7 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 }
 
 func putStyle(r *http.Request, styleName string) (err error) {
-	if r.Method != "POST" {
+	if r.Method != "PUT" {
 		return ErrInvalidRequestMethod
 	}
 	claim, err := GetMethodFromJWT(r, PIPA.SecretKey)
@@ -104,33 +107,35 @@ func putStyle(r *http.Request, styleName string) (err error) {
 	if err != nil {
 		return
 	}
+	if ok := validStyleName(styleName); !ok {
+		return ErrInvalidStyleCode
+	}
 	style := new(types.ImageStyle)
 	style.Bucket = claim.Bucket
 	style.StyleName = styleName
 	style.StyleCode = styleCode
-	_, err = PIPA.Client.GetStyle(claim.Bucket, styleName)
+	data, err := PIPA.Client.GetStyle(claim.Bucket, styleName)
 	if err != nil {
-		if err != ErrNoSuchKey {
-			return
-		} else {
-			uid, err := PIPA.Client.GetBucket(claim.Bucket)
-			if err != nil {
-				return err
-			}
-			if uid != claim.ProjectId {
-				return ErrInvalidBucketPermission
-			}
-			validLength, err := PIPA.Client.GetStyles(claim.Bucket)
-			if len(validLength) >= 50 {
-				return ErrTooManyImageStyle
-			}
-			err = PIPA.Client.InsertStyle(*style)
-			if err != nil {
-				return err
-			}
-			PIPA.Log.Println(20, "Put new image style successfully!")
-			return nil
+		return
+	}
+	if data.StyleName == "" {
+		uid, err := PIPA.Client.GetBucket(claim.Bucket)
+		if err != nil {
+			return err
 		}
+		if uid != claim.ProjectId {
+			return ErrInvalidBucketPermission
+		}
+		validLength, err := PIPA.Client.GetStyles(claim.Bucket)
+		if len(validLength) >= 50 {
+			return ErrTooManyImageStyle
+		}
+		err = PIPA.Client.InsertStyle(*style)
+		if err != nil {
+			return err
+		}
+		PIPA.Log.Println(20, "Put new image style successfully!")
+		return nil
 	}
 	err = PIPA.Client.UpdateStyle(*style)
 	if err != nil {
@@ -141,7 +146,7 @@ func putStyle(r *http.Request, styleName string) (err error) {
 }
 
 func delStyle(r *http.Request, styleName string) (err error) {
-	if r.Method != "DEL" {
+	if r.Method != "DELETE" {
 		return ErrInvalidRequestMethod
 	}
 	claim, err := GetMethodFromJWT(r, PIPA.SecretKey)
@@ -152,6 +157,9 @@ func delStyle(r *http.Request, styleName string) (err error) {
 	style, err := PIPA.Client.GetStyle(claim.Bucket, styleName)
 	if err != nil {
 		return
+	}
+	if style.Bucket == "" {
+		return ErrNoSuchKey
 	}
 	err = PIPA.Client.DelStyle(style)
 	if err != nil {
@@ -173,6 +181,9 @@ func getStyle(r *http.Request) ([]byte, error) {
 	styles, err := PIPA.Client.GetStyles(claim.Bucket)
 	if err != nil {
 		return nil, err
+	}
+	if len(styles) <= 0 {
+		return nil, ErrNoRow
 	}
 	response, err := xml.Marshal(styles)
 	if err != nil {
@@ -211,4 +222,3 @@ func image(data TaskData, ch chan result) {
 	ch <- *res
 	return
 }
-

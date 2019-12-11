@@ -35,7 +35,7 @@ func pushRequest(data []byte, pool *redis.Pool) (err error) {
 func popResponse(data TaskData, pool *redis.Pool) (result []byte, err error) {
 	redis_con := pool.Get()
 	defer redis_con.Close()
-	response, err := redis.Strings(redis_con.Do("BRPOP", data.Uuid, 30))
+	response, err := redis.Strings(redis_con.Do("BRPOP", data.Uuid, 60))
 	if response == nil {
 		return nil, ErrTimeout
 	}

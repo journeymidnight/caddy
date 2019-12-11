@@ -22,6 +22,7 @@ const (
 	ErrInvalidDnsResolution
 	ErrInvalidJwtParams
 	ErrInvalidStyleCode
+	ErrInvalidStyleName
 	ErrExpiredToken
 	ErrInvalidRequestMethod
 	ErrJwtParameterParsing
@@ -45,6 +46,7 @@ const (
 	ErrInvalidTlsPem
 	ErrInvalidTlsKey
 	ErrNoRouter
+	ErrNoRow
 	ErrTimeout
 	ErrInternalServer
 )
@@ -68,6 +70,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 	ErrInvalidStyleCode: {
 		CaddyErrorCode: "InvalidStyleCode",
 		Description:    "Incorrect Style code parameters.",
+		HttpStatusCode: http.StatusBadRequest,
+	},
+	ErrInvalidStyleName: {
+		CaddyErrorCode: "InvalidStyleName",
+		Description:    "Incorrect Style name.",
 		HttpStatusCode: http.StatusBadRequest,
 	},
 	ErrExpiredToken: {
@@ -184,6 +191,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 		CaddyErrorCode: "NoRouter",
 		Description:    "The specified parameter does not exist.",
 		HttpStatusCode: http.StatusNotFound,
+	},
+	ErrNoRow: {
+		CaddyErrorCode: "NoRow",
+		Description:    "No related data found in the database.",
+		HttpStatusCode: http.StatusNoContent,
 	},
 	ErrTimeout: {
 		CaddyErrorCode: "Timeout",

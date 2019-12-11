@@ -26,7 +26,7 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	PIPA = p
 	key := r.URL.Query().Get("x-oss-process")
 	if key != "" {
-		p.Log.Println(10, "Enter Pipa Component:", r.Method, r.Host, r.Header, r.URL)
+		p.Log.Println(10, "Enter Pipa Component:", r.Method, r.Host, r.Header, r.URL, "Key:", key)
 		var status int
 		respose, err := processRequest(r, key)
 		if err != nil {
