@@ -21,4 +21,11 @@ type Client interface {
 
 	//DomainTls
 	UpdateDomainTLS(info types.DomainInfo, sealKey string) (err error)
+
+	//ImageStyle
+	InsertStyle(style types.ImageStyle) (err error)
+	DelStyle(style types.ImageStyle) (err error)
+	UpdateStyle(style types.ImageStyle) (err error)
+	GetStyles(bucket string) (styles []types.ImageStyle, err error)
+	GetStyle(bucket string, styleName string) (style types.ImageStyle, err error)
 }

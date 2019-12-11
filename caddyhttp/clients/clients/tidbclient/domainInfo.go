@@ -16,17 +16,6 @@ func (DB *TidbClient) GetDomainOfBucketDomain(domainHost string) (info types.Dom
 	return
 }
 
-func (DB *TidbClient) GetBucket(bucket string) (uid string, err error) {
-	sql := "select uid from buckets where bucketname=?"
-	args := []interface{}{bucket}
-	row := DB.ClientS3.QueryRow(sql, args...)
-	err = row.Scan(&uid)
-	if err != nil {
-		return uid, ErrNoSuchKey
-	}
-	return uid, nil
-}
-
 func (DB *TidbClient) GetDomain(projectId string, domainHost string) (info types.DomainInfo, err error) {
 	var pid, domainH, domainB string
 	sql := info.GetDomain()

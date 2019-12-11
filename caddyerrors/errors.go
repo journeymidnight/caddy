@@ -21,10 +21,12 @@ const (
 	ErrAccessDenied HandleErrorCode = iota
 	ErrInvalidDnsResolution
 	ErrInvalidJwtParams
+	ErrInvalidStyleCode
 	ErrExpiredToken
 	ErrInvalidRequestMethod
 	ErrJwtParameterParsing
 	ErrFormDataParameterParsing
+	ErrImageStyleParsing
 	ErrInvalidTls
 	ErrParameterParsing
 	ErrInvalidBucketDomain
@@ -39,6 +41,7 @@ const (
 	ErrSqlDelete
 	ErrSqlUpdate
 	ErrTooManyHostDomainWithBucket
+	ErrTooManyImageStyle
 	ErrInvalidTlsPem
 	ErrInvalidTlsKey
 	ErrNoRouter
@@ -62,6 +65,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 		Description:    "JWT parameter conversion error.",
 		HttpStatusCode: http.StatusConflict,
 	},
+	ErrInvalidStyleCode: {
+		CaddyErrorCode: "InvalidStyleCode",
+		Description:    "Incorrect Style code parameters.",
+		HttpStatusCode: http.StatusBadRequest,
+	},
 	ErrExpiredToken: {
 		CaddyErrorCode: "ExpiredToken",
 		Description:    "JWT token has expired.",
@@ -75,6 +83,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 	ErrJwtParameterParsing: {
 		CaddyErrorCode: "ErrJwtParameterParsing",
 		Description:    "Parameter parsing carried by JWT failed.",
+		HttpStatusCode: http.StatusBadRequest,
+	},
+	ErrImageStyleParsing: {
+		CaddyErrorCode: "ErrImageStyleParsing",
+		Description:    "Style code parsing error.",
 		HttpStatusCode: http.StatusBadRequest,
 	},
 	ErrFormDataParameterParsing: {
@@ -150,6 +163,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 	ErrTooManyHostDomainWithBucket: {
 		CaddyErrorCode: "TooManyHostDomainWithBucket",
 		Description:    "Bind up to 20 custom domain names per bucket.",
+		HttpStatusCode: http.StatusForbidden,
+	},
+	ErrTooManyImageStyle: {
+		CaddyErrorCode: "TooManyImageStyle",
+		Description:    "Bind up to 50 image style per bucket.",
 		HttpStatusCode: http.StatusForbidden,
 	},
 	ErrInvalidTlsPem: {
