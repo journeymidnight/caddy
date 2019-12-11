@@ -29,9 +29,10 @@
     }
 
     pipa {
-        redis_address redis:6379
+        redis_address 10.5.0.8:6379
         redis_password hehehehe
         redis_maxIdle 3
+        secret_key hehehehe
     }
 
     proxy / http://127.0.0.1:8080 {
@@ -76,9 +77,10 @@
     }
 
     pipa {
-        redis_address redis:6379
+        redis_address 10.5.0.8:6379
         redis_password hehehehe
         redis_maxIdle 3
+        secret_key hehehehe
     }
 
     proxy / http://127.0.0.1:8080 {
@@ -88,3 +90,4 @@
         header_upstream X-Forwarded-Proto {scheme}
     }
 }
+
