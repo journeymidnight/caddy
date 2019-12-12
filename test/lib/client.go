@@ -19,6 +19,9 @@ const (
 	End_Point        = "s3.test.com"
 	Project_Id       = "hehehehe"
 	FileDir          = "/etc/caddy/"
+	SecretKey        = "hehehehe"
+	RedisDir         = "10.5.0.8:6379"
+	RedisPwd         = "hehehehe"
 )
 
 func NewS3() *S3Client {

@@ -4,7 +4,7 @@ import "fmt"
 
 func NewCustomDomain(domainHost string) (int, error) {
 	url := "http://" + End_Point + "/?x-oss-action=NewCustomDomain"
-	token, err := GetJwt(domainHost)
+	token, err := GetJwtForCustomDomain(domainHost)
 	if err != nil {
 		return 0, err
 	}
@@ -14,7 +14,7 @@ func NewCustomDomain(domainHost string) (int, error) {
 
 func GetCustomDomain(domainHost string) (int, error) {
 	url := "http://" + End_Point + "/?x-oss-action=GetCustomDomain"
-	token, err := GetJwt(domainHost)
+	token, err := GetJwtForCustomDomain(domainHost)
 	if err != nil {
 		return 0, err
 	}
@@ -24,7 +24,7 @@ func GetCustomDomain(domainHost string) (int, error) {
 
 func DelCustomDomain(domainHost string) (int, error) {
 	url := "http://" + End_Point + "/?x-oss-action=DelCustomDomain"
-	token, err := GetJwt(domainHost)
+	token, err := GetJwtForCustomDomain(domainHost)
 	if err != nil {
 		return 0, err
 	}
