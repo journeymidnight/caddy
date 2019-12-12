@@ -75,8 +75,8 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 	if err != nil {
 		return
 	}
-	if style.StyleName == "" {
-		return nil,ErrNoSuchKey
+	if style.StyleName == "" || style.StyleCode == "" {
+		return nil, ErrNoSuchKey
 	}
 	urls := strings.Split(r.URL.String(), "?")
 	styleUrl := urls[0] + HEADER + style.StyleCode
@@ -91,6 +91,7 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 	if err != nil {
 		return
 	}
+	PIPA.Log.Println(20, "Image process with style successful!")
 	return
 }
 
@@ -194,7 +195,21 @@ func getStyle(r *http.Request) ([]byte, error) {
 }
 
 func image(data TaskData, ch chan result) {
+	var err error
 	res := new(result)
+	res.resByte, err = getImageFromRedis(data.Url, PIPA.redis)
+	if len(res.resByte) > 0 {
+		if err != nil {
+			PIPA.Log.Println(20, data.Url, data.Uuid, err)
+			res.resByte = nil
+			res.resErr = err
+			ch <- *res
+			return
+		}
+		res.resErr = nil
+		ch <- *res
+		return
+	}
 	taskdata, err := json.Marshal(data)
 	if err != nil {
 		PIPA.Log.Println(20, data.Url, data.Uuid, err)

@@ -35,7 +35,7 @@ func pushRequest(data []byte, pool *redis.Pool) (err error) {
 func popResponse(data TaskData, pool *redis.Pool) (result []byte, err error) {
 	redis_con := pool.Get()
 	defer redis_con.Close()
-	response, err := redis.Strings(redis_con.Do("BRPOP", data.Uuid, 60))
+	response, err := redis.Strings(redis_con.Do("BRPOP", data.Uuid, 30))
 	if response == nil {
 		return nil, ErrTimeout
 	}
@@ -47,5 +47,16 @@ func popResponse(data TaskData, pool *redis.Pool) (result []byte, err error) {
 			return
 		}
 	}
+	return
+}
+
+func getImageFromRedis(url string, pool *redis.Pool) (result []byte, err error) {
+	redis_con := pool.Get()
+	defer redis_con.Close()
+	result, err = redis.Bytes(redis_con.Do("GET", url))
+	if err != nil {
+		return
+	}
+	PIPA.Log.Println(20, "Success get image from redis directly!")
 	return
 }
