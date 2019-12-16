@@ -2,7 +2,7 @@ package pipa
 
 import (
 	caddy "github.com/journeymidnight/yig-front-caddy"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"strconv"
 )
@@ -22,10 +22,11 @@ func setup(c *caddy.Controller) error {
 	}
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return Pipa{
-			Next:      next,
-			redis:     newRedisPool(redisMaxIdle, redisAddress, redisPwd),
-			Client:    tidbclient.NewCustomDomainClient(s3Source, caddySource, db),
-			SecretKey: secretKey,
+			Next:        next,
+			redis:       newRedisPool(redisMaxIdle, redisAddress, redisPwd),
+			S3Client:    tidbclient.NewTidbClient(s3Source, db),
+			CaddyClient: tidbclient.NewTidbClient(caddySource, db),
+			SecretKey:   secretKey,
 		}
 	})
 	return nil

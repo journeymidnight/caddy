@@ -19,13 +19,13 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
 	"io/ioutil"
 
 	"net/url"
 	"strings"
 
 	"github.com/journeymidnight/yig-front-caddy"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	"github.com/klauspost/cpuid"
 	"github.com/xenolf/lego/acme"
 )
@@ -144,7 +144,7 @@ type Config struct {
 	certCache *certificateCache // pointer to the Instance's certificate store
 	tlsConfig *tls.Config       // the final tls.Config created with buildStandardTLSConfig()
 
-	CaddySource   string
+	DBSource      string
 	SealKey       string
 	DefaultPem    string
 	DefaultPemKey string

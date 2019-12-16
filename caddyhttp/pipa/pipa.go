@@ -2,8 +2,8 @@ package pipa
 
 import (
 	"github.com/garyburd/redigo/redis"
+	. "github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
-	. "github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"github.com/journeymidnight/yig-front-caddy/caddylog"
 	"github.com/journeymidnight/yig-front-caddy/helper"
@@ -13,16 +13,20 @@ import (
 var PIPA Pipa
 
 type Pipa struct {
-	Next      httpserver.Handler
-	redis     *redis.Pool
-	Log       *caddylog.Logger
-	SecretKey string
-	Client    *TidbClient
+	Next        httpserver.Handler
+	redis       *redis.Pool
+	Log         *caddylog.Logger
+	SecretKey   string
+	S3Client    *TidbClient
+	CaddyClient *TidbClient
 }
 
 func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	logger := r.Context().Value("logger").(*helper.Log)
 	p.Log = logger.Logger
+	clients := r.Context().Value("database").(map[string]*TidbClient)
+	p.S3Client = clients["yig"]
+	p.CaddyClient = clients["caddy"]
 	PIPA = p
 	key := r.URL.Query().Get("x-oss-process")
 	if key != "" {

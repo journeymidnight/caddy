@@ -2,7 +2,7 @@ package customdomain
 
 import (
 	"encoding/xml"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/types"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/types"
 	"time"
 )
 

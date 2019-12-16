@@ -16,13 +16,7 @@
         log_level 20
     }
 
-    domainresolution {
-        s3_db root:@tcp(10.5.0.17:4000)/yig
-        caddy_db root:@tcp(10.5.0.17:4000)/caddy
-        db_max_idle_conns 1024
-        db_max_open_conns 10240
-        db_conn_max_life_seconds 300
-    }
+    domainresolution
 
     log / access.log "{combined}" {
         rotate_size 50  # Rotate after 50 MB
@@ -65,11 +59,6 @@
 
     customdomain {
         custom_domainflag x-oss-action
-        s3_db root:@tcp(10.5.0.17:4000)/yig
-        caddy_db root:@tcp(10.5.0.17:4000)/caddy
-        db_max_idle_conns 1024
-        db_max_open_conns 10240
-        db_conn_max_life_seconds 300
         secret_key hehehehe
         seal_key hehehehe
     }

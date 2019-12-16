@@ -2,8 +2,8 @@ package customdomain
 
 import (
 	"encoding/xml"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/types"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/types"
 	"net/http"
 	"strings"
 	"time"
@@ -45,9 +45,9 @@ func GetCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	var object []types.DomainInfo
 	var err error
 	if bucketDomain == "" {
-		object, err = DOMAIN.Client.GetAllDomainInfos(projectId, DOMAIN.SealKey)
+		object, err = DOMAIN.CaddyClient.GetAllDomainInfos(projectId, DOMAIN.SealKey)
 	} else {
-		object, err = DOMAIN.Client.GetDomainInfos(projectId, bucketDomain, DOMAIN.SealKey)
+		object, err = DOMAIN.CaddyClient.GetDomainInfos(projectId, bucketDomain, DOMAIN.SealKey)
 	}
 	if err != nil {
 		return nil, err
@@ -77,18 +77,18 @@ func NewCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	if bucket != validDomainBucket[0] {
 		return nil, ErrInvalidBucketDomain
 	}
-	validPID, err := DOMAIN.Client.GetBucket(bucket)
+	validPID, err := DOMAIN.S3Client.GetBucket(bucket)
 	if err != nil {
 		return nil, err
 	}
 	if validPID != projectId {
 		return nil, ErrInvalidBucketPermission
 	}
-	validLength, err := DOMAIN.Client.GetDomainInfos(projectId, domainBucket, DOMAIN.SealKey)
+	validLength, err := DOMAIN.CaddyClient.GetDomainInfos(projectId, domainBucket, DOMAIN.SealKey)
 	if len(validLength) >= 20 {
 		return nil, ErrTooManyHostDomainWithBucket
 	}
-	resultHost, err := DOMAIN.Client.GetDomain(projectId, domainHost)
+	resultHost, err := DOMAIN.CaddyClient.GetDomain(projectId, domainHost)
 	if err != nil {
 		if err != ErrNoSuchKey {
 			return nil, err
@@ -105,7 +105,7 @@ func NewCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	resultHost.ProjectId = projectId
 	resultHost.DomainHost = domainHost
 	resultHost.DomainBucket = domainBucket
-	err = DOMAIN.Client.InsertDomain(resultHost, DOMAIN.SealKey)
+	err = DOMAIN.CaddyClient.InsertDomain(resultHost, DOMAIN.SealKey)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func DelCustomDomain(r *http.Request, claim *Claims) error {
 	var info types.DomainInfo
 	info.ProjectId = projectId
 	info.DomainHost = domainHost
-	err := DOMAIN.Client.DelDomain(info)
+	err := DOMAIN.CaddyClient.DelDomain(info)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func PutCertificate(r *http.Request, claim *Claims) error {
 	if projectId == "" || domainHost == "" {
 		return ErrJwtParameterParsing
 	}
-	resultHost, err := DOMAIN.Client.GetDomain(projectId, domainHost)
+	resultHost, err := DOMAIN.CaddyClient.GetDomain(projectId, domainHost)
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func PutCertificate(r *http.Request, claim *Claims) error {
 	}
 	resultHost.TlsDomain = tls
 	resultHost.TlsDomainKey = tlsKey
-	err = DOMAIN.Client.UpdateDomainTLS(resultHost, DOMAIN.SealKey)
+	err = DOMAIN.CaddyClient.UpdateDomainTLS(resultHost, DOMAIN.SealKey)
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func DelCertificate(r *http.Request, claim *Claims) (err error) {
 	info.DomainHost = domainHost
 	info.TlsDomain = ""
 	info.TlsDomainKey = ""
-	err = DOMAIN.Client.UpdateDomainTLS(info, DOMAIN.SealKey)
+	err = DOMAIN.CaddyClient.UpdateDomainTLS(info, DOMAIN.SealKey)
 	if err != nil {
 		return err
 	}

@@ -19,7 +19,6 @@ import (
 	"crypto/tls"
 	"encoding/pem"
 	"fmt"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -29,6 +28,7 @@ import (
 	"strings"
 
 	"github.com/journeymidnight/yig-front-caddy"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/telemetry"
 )
 
@@ -228,7 +228,7 @@ func setupTLS(c *caddy.Controller) error {
 				if !c.NextArg() {
 					return c.Errf("Caddy database does not match: '%s'", c.ArgErr())
 				}
-				config.CaddySource = c.Val()
+				config.DBSource = c.Val()
 				break
 			case "seal_key":
 				if !c.NextArg() {
@@ -277,15 +277,15 @@ func setupTLS(c *caddy.Controller) error {
 			}
 		}
 
-		if config.CaddySource != "" {
-			var client tidbclient.TidbClient
-			client.ClientBusiness = tidbclient.NewTidbClient(config.CaddySource, config.DB)
-			config.Client = &client
+		if config.DBSource != "" {
+			var client *tidbclient.TidbClient
+			client = tidbclient.NewTidbClient(config.DBSource, config.DB)
+			config.Client = client
 			err := config.CacheManagedCertificateFromDatabaseNoReturn()
 			if err != nil {
 				return c.Errf("Wrong database cache: '%s'", err)
 			}
-			log.Printf("[INFO] Successfully loaded TLS-DB assets from %s", config.CaddySource)
+			log.Printf("[INFO] Successfully loaded TLS-DB assets from %s", config.DBSource)
 		}
 
 		// tls requires at least one argument if a block is not opened

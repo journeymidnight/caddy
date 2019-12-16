@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"github.com/google/uuid"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/types"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/types"
 	"net/http"
 	"strings"
 )
@@ -71,7 +71,7 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 	bucketHost := r.Host
 	host := strings.Split(bucketHost, ".")
 	bucket := host[0]
-	style, err := PIPA.Client.GetStyle(bucket, styleName)
+	style, err := PIPA.CaddyClient.GetStyle(bucket, styleName)
 	if err != nil {
 		return
 	}
@@ -115,30 +115,30 @@ func putStyle(r *http.Request, styleName string) (err error) {
 	style.Bucket = claim.Bucket
 	style.StyleName = styleName
 	style.StyleCode = styleCode
-	data, err := PIPA.Client.GetStyle(claim.Bucket, styleName)
+	data, err := PIPA.CaddyClient.GetStyle(claim.Bucket, styleName)
 	if err != nil {
 		return
 	}
 	if data.StyleName == "" {
-		uid, err := PIPA.Client.GetBucket(claim.Bucket)
+		uid, err := PIPA.S3Client.GetBucket(claim.Bucket)
 		if err != nil {
 			return err
 		}
 		if uid != claim.ProjectId {
 			return ErrInvalidBucketPermission
 		}
-		validLength, err := PIPA.Client.GetStyles(claim.Bucket)
+		validLength, err := PIPA.CaddyClient.GetStyles(claim.Bucket)
 		if len(validLength) >= 50 {
 			return ErrTooManyImageStyle
 		}
-		err = PIPA.Client.InsertStyle(*style)
+		err = PIPA.CaddyClient.InsertStyle(*style)
 		if err != nil {
 			return err
 		}
 		PIPA.Log.Println(20, "Put new image style successfully!")
 		return nil
 	}
-	err = PIPA.Client.UpdateStyle(*style)
+	err = PIPA.CaddyClient.UpdateStyle(*style)
 	if err != nil {
 		return
 	}
@@ -155,14 +155,14 @@ func delStyle(r *http.Request, styleName string) (err error) {
 		return
 	}
 	PIPA.Log.Println(20, "Enter delete image style!")
-	style, err := PIPA.Client.GetStyle(claim.Bucket, styleName)
+	style, err := PIPA.CaddyClient.GetStyle(claim.Bucket, styleName)
 	if err != nil {
 		return
 	}
 	if style.Bucket == "" {
 		return ErrNoSuchKey
 	}
-	err = PIPA.Client.DelStyle(style)
+	err = PIPA.CaddyClient.DelStyle(style)
 	if err != nil {
 		return
 	}
@@ -179,7 +179,7 @@ func getStyle(r *http.Request) ([]byte, error) {
 		return nil, err
 	}
 	PIPA.Log.Println(20, "Enter get image style!")
-	styles, err := PIPA.Client.GetStyles(claim.Bucket)
+	styles, err := PIPA.CaddyClient.GetStyles(claim.Bucket)
 	if err != nil {
 		return nil, err
 	}

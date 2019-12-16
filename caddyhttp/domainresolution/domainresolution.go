@@ -1,8 +1,8 @@
 package domainresolution
 
 import (
+	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"github.com/journeymidnight/yig-front-caddy/caddylog"
 	"github.com/journeymidnight/yig-front-caddy/helper"
@@ -21,6 +21,8 @@ type DomainResolution struct {
 
 func (c DomainResolution) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {
 	logger := r.Context().Value("logger").(*helper.Log)
+	clients := r.Context().Value("database").(map[string]*tidbclient.TidbClient)
+	c.Client = clients["caddy"]
 	c.Log = logger.Logger
 	c.Log.Println(10, "Enter DomainResolution Function", r.Method, r.Host, r.Header, r.URL)
 	DOMAINRESOLUTION = c

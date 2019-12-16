@@ -18,6 +18,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/journeymidnight/yig-front-caddy/caddydb"
 	"log"
 	"net"
 	"net/url"
@@ -67,6 +68,7 @@ func init() {
 	caddy.RegisterParsingCallback(serverType, "root", hideCaddyfile)
 	caddy.RegisterParsingCallback(serverType, "tls", activateHTTPS)
 	caddytls.RegisterConfigGetter(serverType, func(c *caddy.Controller) *caddytls.Config { return GetConfig(c).TLS })
+	caddydb.RegisterConfigGetter(serverType, func(c *caddy.Controller) *caddydb.Config { return GetConfig(c).DB })
 
 	// disable the caddytls package reporting ClientHellos
 	// to telemetry, since our MITM detector does this but
@@ -177,6 +179,9 @@ func (h *httpContext) InspectServerBlocks(sourceFile string, serverBlocks []cadd
 				altTLSALPNPort = HTTPSPort
 			}
 
+			caddydbConfig := caddydb.NewConfig()
+			caddydbConfig.Hostname = addr.Host
+
 			// Make our caddytls.Config, which has a pointer to the
 			// instance's certificate cache and enough information
 			// to use automatic HTTPS when the time comes
@@ -190,6 +195,7 @@ func (h *httpContext) InspectServerBlocks(sourceFile string, serverBlocks []cadd
 				Addr:            addr,
 				Root:            Root,
 				TLS:             caddytlsConfig,
+				DB:              caddydbConfig,
 				originCaddyfile: sourceFile,
 				IndexPages:      staticfiles.DefaultIndexPages,
 			}
@@ -336,7 +342,7 @@ func GetConfig(c *caddy.Controller) *SiteConfig {
 	// we should only get here during tests because directive
 	// actions typically skip the server blocks where we make
 	// the configs
-	cfg := &SiteConfig{Root: Root, TLS: new(caddytls.Config), IndexPages: staticfiles.DefaultIndexPages}
+	cfg := &SiteConfig{Root: Root, TLS: new(caddytls.Config), DB: new(caddydb.Config), IndexPages: staticfiles.DefaultIndexPages}
 	ctx.saveConfig(key, cfg)
 	return cfg
 }
@@ -596,6 +602,7 @@ var directives = []string{
 	"bind",
 	"limits",
 	"timeouts",
+	"database",
 	"tls",
 
 	// services/utilities, or other directives that don't necessarily inject handlers

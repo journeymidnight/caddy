@@ -15,6 +15,7 @@
 package httpserver
 
 import (
+	"github.com/journeymidnight/yig-front-caddy/caddydb"
 	"time"
 
 	"github.com/journeymidnight/yig-front-caddy/caddytls"
@@ -35,6 +36,8 @@ type SiteConfig struct {
 
 	// TLS configuration
 	TLS *caddytls.Config
+
+	DB *caddydb.Config
 
 	// If true, the Host header in the HTTP request must
 	// match the SNI value in the TLS handshake (if any).
@@ -128,6 +131,10 @@ func (s *SiteConfig) AddListenerMiddleware(l ListenerMiddleware) {
 // TLSConfig returns s.TLS.
 func (s SiteConfig) TLSConfig() *caddytls.Config {
 	return s.TLS
+}
+
+func (s SiteConfig) DBConfig() *caddydb.Config {
+	return s.DB
 }
 
 // Host returns s.Addr.Host.
