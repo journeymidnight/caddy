@@ -20,6 +20,8 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/journeymidnight/yig-front-caddy/caddydb"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	"log"
 	"net"
 	"net/http"
@@ -49,6 +51,7 @@ type Server struct {
 	connTimeout time.Duration // max time to wait for a connection before force stop
 	tlsGovChan  chan struct{} // close to stop the TLS maintenance goroutine
 	vhosts      *vhostTrie
+	database    map[string]*tidbclient.TidbClient
 }
 
 // ensure it satisfies the interface
@@ -70,6 +73,14 @@ func makeTLSConfig(group []*SiteConfig) (*tls.Config, error) {
 		tlsConfigs = append(tlsConfigs, group[i].TLS)
 	}
 	return caddytls.MakeTLSConfig(tlsConfigs)
+}
+
+func makeDBConfig(group []*SiteConfig) map[string]*tidbclient.TidbClient {
+	var dbConfigs []*caddydb.Config
+	for i := range group {
+		dbConfigs = append(dbConfigs, group[i].DB)
+	}
+	return caddydb.MakeTLSConfig(dbConfigs)
 }
 
 func getFallbacks(sites []*SiteConfig) []string {
@@ -94,6 +105,14 @@ func NewServer(addr string, group []*SiteConfig) (*Server, error) {
 	s.vhosts.fallbackHosts = append(s.vhosts.fallbackHosts, getFallbacks(group)...)
 	s.Server = makeHTTPServerWithHeaderLimit(s.Server, group)
 	s.Server.Handler = s // this is weird, but whatever
+
+	clients := makeDBConfig(group)
+	var keys []string
+	for key, _ := range clients {
+		keys = append(keys, key)
+	}
+	fmt.Println("Already loaded database connections:", keys)
+	s.database = clients
 
 	// extract TLS settings from each site config to build
 	// a tls.Config, which will not be nil if TLS is enabled
@@ -442,7 +461,8 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) (int, error) 
 		return http.StatusForbidden, nil
 	}
 
-	return vhost.middlewareChain.ServeHTTP(w, r)
+	ctx := context.WithValue(r.Context(), "database", s.database)
+	return vhost.middlewareChain.ServeHTTP(w, r.WithContext(ctx))
 }
 
 func trimPathPrefix(u *url.URL, prefix string) *url.URL {

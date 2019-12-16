@@ -1,8 +1,8 @@
 package customdomain
 
 import (
+	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
-	"github.com/journeymidnight/yig-front-caddy/caddyhttp/clients/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"github.com/journeymidnight/yig-front-caddy/caddylog"
 	"github.com/journeymidnight/yig-front-caddy/helper"
@@ -17,7 +17,8 @@ type Domain struct {
 	CustomDomainFlag string
 	SecretKey        string
 	SealKey          string
-	Client           *tidbclient.TidbClient
+	S3Client         *tidbclient.TidbClient
+	CaddyClient      *tidbclient.TidbClient
 	Log              *caddylog.Logger
 	Cache            ttlru.Cache
 }
@@ -25,6 +26,9 @@ type Domain struct {
 func (c Domain) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, err error) {
 	logger := r.Context().Value("logger").(*helper.Log)
 	c.Log = logger.Logger
+	clients := r.Context().Value("database").(map[string]*tidbclient.TidbClient)
+	c.S3Client = clients["yig"]
+	c.CaddyClient = clients["caddy"]
 	DOMAIN = c
 	v := r.URL.Query()
 	flag := v.Get(c.CustomDomainFlag)
