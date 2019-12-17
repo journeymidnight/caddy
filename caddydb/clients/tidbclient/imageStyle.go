@@ -79,7 +79,7 @@ func (DB *TidbClient) UpdateStyle(style ImageStyle) (err error) {
 }
 
 func (DB *TidbClient) GetStyles(bucket string) (styles []ImageStyle, err error) {
-	sql := "select bucket_name,style_name,IFNULL(style_code,'') from pipa where bucket_name=?"
+	sql := "select bucket_name,style_name,IFNULL(style_code,'') from images_style where bucket_name=?"
 	args := []interface{}{bucket}
 	rows, err := DB.Client.Query(sql, args...)
 	if err != nil {
@@ -98,7 +98,7 @@ func (DB *TidbClient) GetStyles(bucket string) (styles []ImageStyle, err error) 
 }
 
 func (DB *TidbClient) GetStyle(bucket string, styleName string) (style ImageStyle, err error) {
-	sql := "select bucket_name,style_name,IFNULL(style_code,'') from pipa where bucket_name=? and style_name=?"
+	sql := "select bucket_name,style_name,IFNULL(style_code,'') from images_style where bucket_name=? and style_name=?"
 	args := []interface{}{bucket, styleName}
 	rows, err := DB.Client.Query(sql, args...)
 	if err != nil {
