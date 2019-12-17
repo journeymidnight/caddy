@@ -9,7 +9,15 @@ import (
 	"unicode/utf8"
 )
 
-var fuc = []string{"resize", "watermark"}
+const (
+	FUC_RESIZE    = "resize"
+	FUC_WATERMARK = "watermark"
+)
+
+var fuc = []string{
+	FUC_RESIZE,
+	FUC_WATERMARK,
+}
 
 func ParseAndValidStyleCodeFromBody(r *http.Request) (code string, err error) {
 	PIPA.Log.Println(20, "Enter get style code from body")

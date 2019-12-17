@@ -14,7 +14,7 @@
  Date: 11/12/2019 17:42:22
 */
 
-SET NAMES utf8mb4;
+SET NAMES utf8;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
@@ -25,16 +25,16 @@ CREATE TABLE `custom_domain`  (
   `project_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `host_domain` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `bucket_domain` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `tls_domain` blob NULL,
-  `tls_domain_key` blob NULL,
+  `tls_domain` blob DEFAULT NULL,
+  `tls_domain_key` blob DEFAULT NULL,
   PRIMARY KEY (`project_id`, `host_domain`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 -- ----------------------------
--- Table structure for pipa
+-- Table structure for images_style
 -- ----------------------------
-DROP TABLE IF EXISTS `pipa`;
-CREATE TABLE `pipa`  (
+DROP TABLE IF EXISTS `images_style`;
+CREATE TABLE `images_style`  (
   `bucket_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `style_name` varchar(128) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `style_code` text CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
@@ -42,3 +42,4 @@ CREATE TABLE `pipa`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 SET FOREIGN_KEY_CHECKS = 1;
+

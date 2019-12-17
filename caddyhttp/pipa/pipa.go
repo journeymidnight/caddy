@@ -32,7 +32,7 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	if key != "" {
 		p.Log.Println(10, "Enter Pipa Component:", r.Method, r.Host, r.Header, r.URL, "Key:", key)
 		var status int
-		respose, err := processRequest(r, key)
+		respose, err := imageFunc(r, key)
 		if err != nil {
 			apiErrorCode, ok := err.(HandleError)
 			if ok {

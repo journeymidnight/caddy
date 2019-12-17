@@ -25,7 +25,7 @@ type result struct {
 	resErr  error
 }
 
-func processRequest(r *http.Request, key string) (response []byte, err error) {
+func imageFunc(r *http.Request, key string) (response []byte, err error) {
 	fuc := strings.Split(key, "/")
 	styleName := fuc[1]
 	switch fuc[0] {
