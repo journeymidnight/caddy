@@ -28,7 +28,7 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	p.S3Client = clients["yig"]
 	p.CaddyClient = clients["caddy"]
 	PIPA = p
-	key := r.URL.Query().Get("x-oss-process")
+	key := r.URL.Query().Get(HEADER)
 	if key != "" {
 		p.Log.Println(10, "Enter Pipa Component:", r.Method, r.Host, r.Header, r.URL, "Key:", key)
 		var status int
