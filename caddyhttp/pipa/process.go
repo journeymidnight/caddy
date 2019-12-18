@@ -12,7 +12,7 @@ import (
 
 const (
 	HTTP   = "http://"
-	HEADER = "?x-oss-process="
+	HEADER = "x-oss-process"
 )
 
 type TaskData struct {
@@ -78,12 +78,12 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 	if style.StyleName == "" || style.StyleCode == "" {
 		return nil, ErrNoSuchKey
 	}
-	urls := strings.Split(r.URL.String(), "?")
-	styleUrl := urls[0] + HEADER + style.StyleCode
+	unprocessedURL := r.URL.String()
+	key := r.URL.Query().Get(HEADER)
 	ch := make(chan result)
 	taskData := &TaskData{}
 	taskData.Uuid = uuid.New().String()
-	taskData.Url = HTTP + r.Host + styleUrl
+	taskData.Url = HTTP + r.Host + strings.Replace(unprocessedURL, key, style.StyleCode, 1)
 	go image(*taskData, ch)
 	res := <-ch
 	response = res.resByte
@@ -196,6 +196,7 @@ func getStyle(r *http.Request) ([]byte, error) {
 
 func image(data TaskData, ch chan result) {
 	var err error
+	PIPA.Log.Println(20, "UUID is:", data.Uuid, "Url is:", data.Url)
 	res := new(result)
 	res.resByte, err = getImageFromRedis(data.Url, PIPA.redis)
 	if len(res.resByte) > 0 {
