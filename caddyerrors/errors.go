@@ -34,6 +34,7 @@ const (
 	ErrInvalidBindBucketDomain
 	ErrInvalidBucketPermission
 	ErrNoSuchKey
+	ErrNoSuchStyle
 	ErrGetMarshal
 	ErrInvalidHostDomain
 	ErrInvalidSql
@@ -49,6 +50,7 @@ const (
 	ErrNoRow
 	ErrTimeout
 	ErrInternalServer
+	ErrPipaProcesss
 )
 
 var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
@@ -132,6 +134,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 		Description:    "The specified key does not exist.",
 		HttpStatusCode: http.StatusNotFound,
 	},
+	ErrNoSuchStyle: {
+		CaddyErrorCode: "NoSuchStyle",
+		Description:    "The style you requested does not exist.",
+		HttpStatusCode: http.StatusNotFound,
+	},
 	ErrGetMarshal: {
 		CaddyErrorCode: "GetMarshalFailure",
 		Description:    "Return parameter parsing failed.",
@@ -206,6 +213,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 		CaddyErrorCode: "InternalErr",
 		Description:    "Internal server error.",
 		HttpStatusCode: http.StatusInternalServerError,
+	},
+	ErrPipaProcesss: {
+		CaddyErrorCode: "InternalErr",
+		Description:    "Internal server error.",
+		HttpStatusCode: http.StatusNotFound,
 	},
 }
 

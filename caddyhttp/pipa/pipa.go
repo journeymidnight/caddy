@@ -41,6 +41,10 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 				status = http.StatusInternalServerError
 			}
 			w.WriteHeader(status)
+			if respose != nil {
+				w.Header().Set("Content-Type", "text/xml;charset=UTF-8")
+				return w.Write(respose)
+			}
 			respose = []byte(apiErrorCode.Description())
 			return w.Write(respose)
 		}
