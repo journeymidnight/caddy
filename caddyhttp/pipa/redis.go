@@ -3,6 +3,7 @@ package pipa
 import (
 	"github.com/garyburd/redigo/redis"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
+	"strings"
 	"time"
 )
 
@@ -39,8 +40,9 @@ func popResponse(data TaskData, pool *redis.Pool) (result []byte, err error) {
 	if response == nil {
 		return nil, ErrTimeout
 	}
-	if response[1] != "200" {
-		return nil, ErrInternalServer
+	pipaResult := strings.Split(response[1], ",")
+	if pipaResult[0] != "200" {
+		return []byte(response[1]), ErrInternalServer
 	} else {
 		result, err = redis.Bytes(redis_con.Do("GET", data.Url))
 		if err != nil {
