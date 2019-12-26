@@ -1,13 +1,16 @@
 package types
 
+import "encoding/xml"
+
 type Imagestyles struct {
-	ImageStyle []ImageStyle
+	XMLName    xml.Name     `xml:"image_styles"`
+	ImageStyle []ImageStyle `xml:"image_style"`
 }
 
 type ImageStyle struct {
-	Bucket    string
-	StyleName string
-	StyleCode string
+	Bucket    string `xml:"bucket"`
+	StyleName string `xml:"style_name"`
+	StyleCode string `xml:"style_code"`
 }
 
 func (i *ImageStyle) InsertStyle() (string, []interface{}) {
