@@ -78,7 +78,7 @@ func (DB *TidbClient) UpdateStyle(style ImageStyle) (err error) {
 	return nil
 }
 
-func (DB *TidbClient) GetStyles(bucket string) (styles []ImageStyle, err error) {
+func (DB *TidbClient) GetStyles(bucket string) (styles Imagestyles, err error) {
 	sql := "select bucket_name,style_name,IFNULL(style_code,'') from images_style where bucket_name=?"
 	args := []interface{}{bucket}
 	rows, err := DB.Client.Query(sql, args...)
@@ -88,7 +88,7 @@ func (DB *TidbClient) GetStyles(bucket string) (styles []ImageStyle, err error) 
 	for rows.Next() {
 		IImageStyle := ImageStyle{}
 		err = rows.Scan(&IImageStyle.Bucket, &IImageStyle.StyleName, &IImageStyle.StyleCode)
-		styles = append(styles, IImageStyle)
+		styles.ImageStyle = append(styles.ImageStyle, IImageStyle)
 	}
 	if err != nil {
 		return styles, ErrNoSuchKey

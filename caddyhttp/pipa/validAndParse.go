@@ -79,14 +79,3 @@ func validStyleName(styleName string) bool {
 	}
 	return true
 }
-
-func validUrl(r *http.Request) bool {
-	urlAll := r.URL.String()
-	requestUrl := strings.Split(urlAll, "?")
-	request := strings.Split(requestUrl[0], "/")
-	if len(request) > 2 {
-		return false
-	} else {
-		return true
-	}
-}

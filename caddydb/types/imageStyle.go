@@ -1,5 +1,9 @@
 package types
 
+type Imagestyles struct {
+	ImageStyle []ImageStyle
+}
+
 type ImageStyle struct {
 	Bucket    string
 	StyleName string
