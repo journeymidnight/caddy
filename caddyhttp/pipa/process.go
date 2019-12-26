@@ -51,11 +51,6 @@ func imageFunc(r *http.Request, key string) (response []byte, err error) {
 
 func processImage(r *http.Request) (response []byte, err error) {
 	PIPA.Log.Println(20, "Enter image process!")
-	validUrl := validUrl(r)
-	if !validUrl {
-		PIPA.Log.Println(20, "Image process url err!")
-		return writeErrorResponse(ErrNoRouter)
-	}
 	ch := make(chan result)
 	taskData := &TaskData{}
 	taskData.Uuid = uuid.New().String()
@@ -77,11 +72,6 @@ func processImage(r *http.Request) (response []byte, err error) {
 
 func processStyle(r *http.Request, styleName string) (response []byte, err error) {
 	PIPA.Log.Println(20, "Enter style process!")
-	validUrl := validUrl(r)
-	if !validUrl {
-		PIPA.Log.Println(20, "Image process url err!")
-		return writeErrorResponse(ErrNoRouter)
-	}
 	bucketHost := r.Host
 	host := strings.Split(bucketHost, ".")
 	bucket := host[0]
@@ -153,7 +143,7 @@ func putStyle(r *http.Request, styleName string) (err error) {
 			return ErrInvalidBucketPermission
 		}
 		validLength, err := PIPA.CaddyClient.GetStyles(claim.Bucket)
-		if len(validLength) >= 50 {
+		if len(validLength.ImageStyle) >= 50 {
 			PIPA.Log.Println(20, "Insert image style with get style err:", err)
 			return ErrTooManyImageStyle
 		}
@@ -219,7 +209,7 @@ func getStyle(r *http.Request) ([]byte, error) {
 		piErrorCode, _ := err.(HandleError)
 		return writeErrorResponse(piErrorCode)
 	}
-	if len(styles) <= 0 {
+	if len(styles.ImageStyle) <= 0 {
 		PIPA.Log.Println(20, "Get image style with no row")
 		return writeErrorResponse(ErrNoRow)
 	}
