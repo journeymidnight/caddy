@@ -14,7 +14,7 @@ import (
 var PIPA Pipa
 
 var CommonS3ResponseHeaders = []string{"Content-Length", "Content-Type", "Connection", "Date", "ETag", "Server",
-	"x-amz-delete-marker", "x-amz-id-2", "x-amz-request-id", "x-amz-version-id", "x-oss-process"}
+	"X-Amz-Delete-Marker", "X-Amz-Request-Id", "X-Amz-Version-Id"}
 
 type Pipa struct {
 	Next            httpserver.Handler
@@ -33,7 +33,7 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	p.S3Client = clients["yig"]
 	p.CaddyClient = clients["caddy"]
 	PIPA = p
-	key := r.URL.Query().Get(HEADER)
+	key := r.URL.Query().Get(IMAGEKEY)
 	if key != "" {
 		origin := r.Header.Get("Origin")
 		if InReservedOrigins(origin) {
