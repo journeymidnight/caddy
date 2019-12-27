@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	HTTP   = "http://"
-	HEADER = "x-oss-process"
-	ORIGIN = "Origin"
+	HTTP     = "http://"
+	IMAGEKEY = "x-oss-process"
 )
 
 type TaskData struct {
@@ -87,7 +86,7 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 		return writeErrorResponse(ErrNoSuchStyle)
 	}
 	unprocessedURL := r.URL.String()
-	key := r.URL.Query().Get(HEADER)
+	key := r.URL.Query().Get(IMAGEKEY)
 	ch := make(chan result)
 	taskData := &TaskData{}
 	taskData.Uuid = uuid.New().String()
