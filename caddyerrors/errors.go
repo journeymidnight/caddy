@@ -23,6 +23,7 @@ const (
 	ErrInvalidJwtParams
 	ErrInvalidStyleCode
 	ErrInvalidStyleName
+	ErrInvalidHeader
 	ErrExpiredToken
 	ErrInvalidRequestMethod
 	ErrJwtParameterParsing
@@ -63,6 +64,11 @@ var ErrorCodeResponse = map[HandleErrorCode]HandleErrorStruct{
 		CaddyErrorCode: "InvalidDnsResolution",
 		Description:    "Query DNS domain name resolution failed.",
 		HttpStatusCode: http.StatusNotFound,
+	},
+	ErrInvalidHeader: {
+		CaddyErrorCode: "InvalidRequest",
+		Description:    "This request is illegal because some header is malformed.",
+		HttpStatusCode: http.StatusBadRequest,
 	},
 	ErrInvalidJwtParams: {
 		CaddyErrorCode: "InvalidJwtParams",

@@ -8,17 +8,22 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/caddylog"
 	"github.com/journeymidnight/yig-front-caddy/helper"
 	"net/http"
+	"strings"
 )
 
 var PIPA Pipa
 
+var CommonS3ResponseHeaders = []string{"Content-Length", "Content-Type", "Connection", "Date", "ETag", "Server",
+	"x-amz-delete-marker", "x-amz-id-2", "x-amz-request-id", "x-amz-version-id", "x-oss-process"}
+
 type Pipa struct {
-	Next        httpserver.Handler
-	redis       *redis.Pool
-	Log         *caddylog.Logger
-	SecretKey   string
-	S3Client    *TidbClient
-	CaddyClient *TidbClient
+	Next            httpserver.Handler
+	redis           *redis.Pool
+	Log             *caddylog.Logger
+	SecretKey       string
+	S3Client        *TidbClient
+	CaddyClient     *TidbClient
+	ReservedOrigins []string
 }
 
 func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
@@ -30,6 +35,23 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	PIPA = p
 	key := r.URL.Query().Get(HEADER)
 	if key != "" {
+		origin := r.Header.Get("Origin")
+		if InReservedOrigins(origin) {
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
+			w.Header().Set("Access-Control-Allow-Methods", r.Header.Get("Access-Control-Request-Method"))
+			w.Header().Set("Access-Control-Expose-Headers", strings.Join(CommonS3ResponseHeaders, ","))
+		}
+		if r.Method == "OPTIONS" {
+			if origin == "" || r.Header.Get("Access-Control-Request-Method") == "" {
+				w.WriteHeader(ErrInvalidHeader.HttpStatusCode())
+				result, _ := writeErrorResponse(ErrInvalidHeader)
+				return w.Write(result)
+			}
+			w.WriteHeader(http.StatusOK)
+			return w.Write(nil)
+		}
 		p.Log.Println(10, "Enter Pipa Component:", r.Method, r.Host, r.Header, r.URL, "Key:", key)
 		var status int
 		respose, err := imageFunc(r, key)
@@ -55,4 +77,16 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 		p.Log.Println(10, "Pipa:", http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 		return p.Next.ServeHTTP(w, r)
 	}
+}
+
+func InReservedOrigins(origin string) bool {
+	if len(PIPA.ReservedOrigins) == 0 {
+		return false
+	}
+	for _, r := range PIPA.ReservedOrigins {
+		if strings.Contains(origin, r) {
+			return true
+		}
+	}
+	return false
 }

@@ -13,6 +13,7 @@ import (
 const (
 	HTTP   = "http://"
 	HEADER = "x-oss-process"
+	ORIGIN = "Origin"
 )
 
 type TaskData struct {
