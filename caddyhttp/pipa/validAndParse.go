@@ -13,12 +13,21 @@ const (
 	FUC_RESIZE    = "resize"
 	FUC_WATERMARK = "watermark"
 	FUC_ROTATE    = "rotate"
+	FUC_CROP      = "crop"
+	FUC_SHARPEN   = "sharpen"
+	FUC_FORMAT    = "format"
+	FUC_QUALITY   = "quality"
 )
 
+// Fields used to verify image processing, including some fields that have not yet been implemented
 var fuc = []string{
 	FUC_RESIZE,
 	FUC_WATERMARK,
 	FUC_ROTATE,
+	FUC_CROP,
+	FUC_SHARPEN,
+	FUC_FORMAT,
+	FUC_QUALITY,
 }
 
 func ParseAndValidStyleCodeFromBody(r *http.Request) (code string, err error) {
