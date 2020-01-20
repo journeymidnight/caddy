@@ -12,11 +12,13 @@ import (
 const (
 	FUC_RESIZE    = "resize"
 	FUC_WATERMARK = "watermark"
+	FUC_ROTATE    = "rotate"
 )
 
 var fuc = []string{
 	FUC_RESIZE,
 	FUC_WATERMARK,
+	FUC_ROTATE,
 }
 
 func ParseAndValidStyleCodeFromBody(r *http.Request) (code string, err error) {
@@ -51,11 +53,6 @@ func valid(code string) bool {
 		}
 		if !isTrue {
 			return false
-		}
-		for n, key := range keys {
-			if n > 0 && len(strings.Split(key, "_")) < 2 {
-				return false
-			}
 		}
 	}
 	return true
