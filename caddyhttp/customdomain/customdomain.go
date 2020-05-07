@@ -33,10 +33,10 @@ func (c Domain) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, e
 	v := r.URL.Query()
 	flag := v.Get(c.CustomDomainFlag)
 	if flag == "" {
-		c.Log.Println(10, "Customdomain:", http.StatusOK, r.Method, r.Host, "Successfully linked yig")
+		c.Log.Info("Customdomain:", http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 		return c.Next.ServeHTTP(w, r)
 	}
-	c.Log.Println(10, "Enter CustomDomain Function", r.Method, r.Host, r.Header, r.URL)
+	c.Log.Info("Enter CustomDomain Function", r.Method, r.Host, r.Header, r.URL)
 	var claim *Claims
 	claim, err = GetMethodFromJWT(r, c.SecretKey)
 	if err != nil {
@@ -46,7 +46,7 @@ func (c Domain) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, e
 		} else {
 			status = http.StatusInternalServerError
 		}
-		c.Log.Println(10, status, err)
+		c.Log.Error(status, err)
 		return status, err
 	}
 	result, err := DomainOperation(r, flag, claim)
@@ -59,20 +59,20 @@ func (c Domain) ServeHTTP(w http.ResponseWriter, r *http.Request) (status int, e
 			status = http.StatusInternalServerError
 		}
 		if err != ErrInvalidHostDomain {
-			c.Log.Println(10, status, err)
+			c.Log.Error(status, err)
 			return status, err
 		} else {
 			w.WriteHeader(status)
-			c.Log.Println(10, status, "The information returned is:", string(result))
+			c.Log.Error(status, "The information returned is:", string(result))
 			return w.Write(result)
 		}
 	}
 	if result != nil {
 		w.WriteHeader(http.StatusOK)
-		c.Log.Println(10, http.StatusOK, "The information returned is:", string(result))
+		c.Log.Info(http.StatusOK, "The information returned is:", string(result))
 		return w.Write(result)
 	}
-	c.Log.Println(10, http.StatusOK, "Custom domain name succeeded")
+	c.Log.Info(http.StatusOK, "Custom domain name succeeded")
 	w.WriteHeader(http.StatusOK)
 	return w.Write(result)
 }

@@ -23,7 +23,7 @@ type StyleInfo struct {
 }
 
 func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, err error) {
-	PIPA.Log.Println(10, "Enter get method from JWT")
+	PIPA.Log.Info("Enter get method from JWT")
 	tokenString := r.Header.Get("Authorization")
 	tokenStrings := strings.Split(tokenString, " ")
 	token, err := jwt.ParseWithClaims(tokenStrings[1], &Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -45,6 +45,6 @@ func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, err err
 	if claim.ProjectId == "" || claim.Bucket == "" {
 		return claim, ErrJwtParameterParsing
 	}
-	PIPA.Log.Println(15, "Get the JWT parameters:", claim.ProjectId, claim.Bucket)
+	PIPA.Log.Info("Get the JWT parameters:", claim.ProjectId, claim.Bucket)
 	return claim, nil
 }

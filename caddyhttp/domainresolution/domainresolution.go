@@ -24,20 +24,20 @@ func (c DomainResolution) ServeHTTP(w http.ResponseWriter, r *http.Request) (sta
 	clients := r.Context().Value("database").(map[string]*tidbclient.TidbClient)
 	c.Client = clients["caddy"]
 	c.Log = logger.Logger
-	c.Log.Println(10, "Enter DomainResolution Function", r.Method, r.Host, r.Header, r.URL)
+	c.Log.Info("Enter DomainResolution Function", r.Method, r.Host, r.Header, r.URL)
 	DOMAINRESOLUTION = c
 	err = Resolution(r)
 	if err != nil {
-		c.Log.Println(10, err)
+		c.Log.Error(err)
 		apiErrorCode, ok := err.(HandleError)
 		if ok {
 			status = apiErrorCode.HttpStatusCode()
 		} else {
 			status = http.StatusInternalServerError
 		}
-		c.Log.Println(10, status, err)
+		c.Log.Info(status, err)
 		return status, err
 	}
-	c.Log.Println(10, http.StatusOK, r.Method, r.Host, "Successfully linked yig")
+	c.Log.Info(http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 	return c.Next.ServeHTTP(w, r)
 }

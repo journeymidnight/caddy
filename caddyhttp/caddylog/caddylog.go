@@ -8,15 +8,15 @@ import (
 	"net/http"
 )
 
-var logger *caddylog.Logger
+var logger caddylog.Logger
 
 type Log struct {
 	Next     httpserver.Handler
 	LogPath  string
-	LogLevel int
+	LogLevel string
 }
 
 func (l Log) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
-	ctx := context.WithValue(r.Context(), "logger", &helper.Log{Logger: logger})
+	ctx := context.WithValue(r.Context(), "logger", &helper.Log{Logger: &logger})
 	return l.Next.ServeHTTP(w, r.WithContext(ctx))
 }

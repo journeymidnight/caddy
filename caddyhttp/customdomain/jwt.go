@@ -25,7 +25,7 @@ type CustomerInfo struct {
 }
 
 func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, err error) {
-	DOMAIN.Log.Println(10, "Enter get method from JWT")
+	DOMAIN.Log.Info("Enter get method from JWT")
 	tokenString := r.Header.Get("Authorization")
 	tokenStrings := strings.Split(tokenString, " ")
 	token, err := jwt.ParseWithClaims(tokenStrings[1], &Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -44,6 +44,6 @@ func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, err err
 	if claim.TimeStamp > lastTime || claim.TimeStamp < firstTime {
 		return claim, ErrExpiredToken
 	}
-	DOMAIN.Log.Println(15, "Get the JWT parameters:", claim.ProjectId, claim.DomainHost, claim.Bucket, claim.BucketDomain)
+	DOMAIN.Log.Info("Get the JWT parameters:", claim.ProjectId, claim.DomainHost, claim.Bucket, claim.BucketDomain)
 	return claim, nil
 }

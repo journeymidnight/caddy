@@ -60,29 +60,29 @@ func processImage(r *http.Request) (response []byte, err error) {
 	response = res.resByte
 	err = res.resErr
 	if err != nil {
-		PIPA.Log.Println(20, "Image process err:", err)
+		PIPA.Log.Error("Image process err:", err)
 		if err == ErrInternalServer {
 			return writeErrorResponseWithPipa(string(response))
 		}
 		return writeErrorResponse(ErrPipaProcesss)
 	}
-	PIPA.Log.Println(20, "Image process successful!")
+	PIPA.Log.Info("Image process successful!")
 	return
 }
 
 func processStyle(r *http.Request, styleName string) (response []byte, err error) {
-	PIPA.Log.Println(20, "Enter style process!")
+	PIPA.Log.Info("Enter style process!")
 	bucketHost := r.Host
 	host := strings.Split(bucketHost, ".")
 	bucket := host[0]
 	style, err := PIPA.CaddyClient.GetStyle(bucket, styleName)
 	if err != nil {
-		PIPA.Log.Println(20, "Image style process get style err:", err)
+		PIPA.Log.Error("Image style process get style err:", err)
 		piErrorCode, _ := err.(HandleError)
 		return writeErrorResponse(piErrorCode)
 	}
 	if style.StyleName == "" || style.StyleCode == "" {
-		PIPA.Log.Println(20, "Image style process no such style")
+		PIPA.Log.Error("Image style process no such style")
 		return writeErrorResponse(ErrNoSuchStyle)
 	}
 	unprocessedURL := r.URL.String()
@@ -96,14 +96,14 @@ func processStyle(r *http.Request, styleName string) (response []byte, err error
 	response = res.resByte
 	err = res.resErr
 	if err != nil {
-		PIPA.Log.Println(20, "Image style process err:", err)
+		PIPA.Log.Error("Image style process err:", err)
 		if err == ErrInternalServer {
 			return writeErrorResponseWithPipa(string(response))
 		}
 		piErrorCode, _ := err.(HandleError)
 		return writeErrorResponse(piErrorCode)
 	}
-	PIPA.Log.Println(20, "Image process with style successful!")
+	PIPA.Log.Info("Image process with style successful!")
 	return
 }
 
@@ -115,10 +115,10 @@ func putStyle(r *http.Request, styleName string) (err error) {
 	if err != nil {
 		return
 	}
-	PIPA.Log.Println(20, "Enter put image style!")
+	PIPA.Log.Info("Enter put image style!")
 	styleCode, err := ParseAndValidStyleCodeFromBody(r)
 	if err != nil {
-		PIPA.Log.Println(20, "Put image style with parse and valid body err:", err)
+		PIPA.Log.Error("Put image style with parse and valid body err:", err)
 		return
 	}
 	if ok := validStyleName(styleName); !ok {
@@ -130,13 +130,13 @@ func putStyle(r *http.Request, styleName string) (err error) {
 	style.StyleCode = styleCode
 	data, err := PIPA.CaddyClient.GetStyle(claim.Bucket, styleName)
 	if err != nil {
-		PIPA.Log.Println(20, "Insert image style with get style err:", err)
+		PIPA.Log.Error("Insert image style with get style err:", err)
 		return
 	}
 	if data.StyleName == "" {
 		uid, err := PIPA.S3Client.GetBucket(claim.Bucket)
 		if err != nil {
-			PIPA.Log.Println(20, "Insert image style with get bucket err:", err)
+			PIPA.Log.Error("Insert image style with get bucket err:", err)
 			return err
 		}
 		if uid != claim.ProjectId {
@@ -144,23 +144,23 @@ func putStyle(r *http.Request, styleName string) (err error) {
 		}
 		validLength, err := PIPA.CaddyClient.GetStyles(claim.Bucket)
 		if len(validLength.ImageStyle) >= 50 {
-			PIPA.Log.Println(20, "Insert image style with get style err:", err)
+			PIPA.Log.Error("Insert image style with get style err:", err)
 			return ErrTooManyImageStyle
 		}
 		err = PIPA.CaddyClient.InsertStyle(*style)
 		if err != nil {
-			PIPA.Log.Println(20, "Insert new image style err:", err)
+			PIPA.Log.Error("Insert new image style err:", err)
 			return err
 		}
-		PIPA.Log.Println(20, "Put new image style successfully!")
+		PIPA.Log.Info("Put new image style successfully!")
 		return nil
 	}
 	err = PIPA.CaddyClient.UpdateStyle(*style)
 	if err != nil {
-		PIPA.Log.Println(20, "Update image style err:", err)
+		PIPA.Log.Error("Update image style err:", err)
 		return
 	}
-	PIPA.Log.Println(20, "Put update image style successfully!")
+	PIPA.Log.Info("Put update image style successfully!")
 	return
 }
 
@@ -170,25 +170,25 @@ func delStyle(r *http.Request, styleName string) (err error) {
 	}
 	claim, err := GetMethodFromJWT(r, PIPA.SecretKey)
 	if err != nil {
-		PIPA.Log.Println(20, "Delete image style with get params err:", err)
+		PIPA.Log.Error("Delete image style with get params err:", err)
 		return
 	}
-	PIPA.Log.Println(20, "Enter delete image style!")
+	PIPA.Log.Info("Enter delete image style!")
 	style, err := PIPA.CaddyClient.GetStyle(claim.Bucket, styleName)
 	if err != nil {
-		PIPA.Log.Println(20, "Delete image style with get style err:", err)
+		PIPA.Log.Error("Delete image style with get style err:", err)
 		return
 	}
 	if style.Bucket == "" {
-		PIPA.Log.Println(20, "Delete image style with no such key")
+		PIPA.Log.Error("Delete image style with no such key")
 		return ErrNoSuchStyle
 	}
 	err = PIPA.CaddyClient.DelStyle(style)
 	if err != nil {
-		PIPA.Log.Println(20, "Delete image style with sql err:", err)
+		PIPA.Log.Error("Delete image style with sql err:", err)
 		return
 	}
-	PIPA.Log.Println(20, "Delete image style successfully!")
+	PIPA.Log.Info("Delete image style successfully!")
 	return
 }
 
@@ -198,39 +198,39 @@ func getStyle(r *http.Request) ([]byte, error) {
 	}
 	claim, err := GetMethodFromJWT(r, PIPA.SecretKey)
 	if err != nil {
-		PIPA.Log.Println(20, "Get image style with JWT err", err)
+		PIPA.Log.Error("Get image style with JWT err", err)
 		piErrorCode, _ := err.(HandleError)
 		return writeErrorResponse(piErrorCode)
 	}
-	PIPA.Log.Println(20, "Enter get image style!")
+	PIPA.Log.Info("Enter get image style!")
 	styles, err := PIPA.CaddyClient.GetStyles(claim.Bucket)
 	if err != nil {
-		PIPA.Log.Println(20, "Get image style with sql err:", err)
+		PIPA.Log.Error("Get image style with sql err:", err)
 		piErrorCode, _ := err.(HandleError)
 		return writeErrorResponse(piErrorCode)
 	}
 	if len(styles.ImageStyle) <= 0 {
-		PIPA.Log.Println(20, "Get image style with no row")
+		PIPA.Log.Error("Get image style with no row")
 		return writeErrorResponse(ErrNoRow)
 	}
 	response, err := xml.Marshal(styles)
 	if err != nil {
-		PIPA.Log.Println(20, "Get image style with xml marshal err:", err)
+		PIPA.Log.Error("Get image style with xml marshal err:", err)
 		piErrorCode, _ := err.(HandleError)
 		return writeErrorResponse(piErrorCode)
 	}
-	PIPA.Log.Println(20, "Get image styles successfully!")
+	PIPA.Log.Info("Get image styles successfully!")
 	return response, nil
 }
 
 func image(data TaskData, ch chan result) {
 	var err error
-	PIPA.Log.Println(20, "UUID is:", data.Uuid, "Url is:", data.Url)
+	PIPA.Log.Info("UUID is:", data.Uuid, "Url is:", data.Url)
 	res := new(result)
 	res.resByte, err = getImageFromRedis(data.Url, PIPA.redis)
 	if len(res.resByte) > 0 {
 		if err != nil {
-			PIPA.Log.Println(20, data.Url, data.Uuid, err)
+			PIPA.Log.Error(data.Url, data.Uuid, err)
 			res.resByte = nil
 			res.resErr = err
 			ch <- *res
@@ -242,7 +242,7 @@ func image(data TaskData, ch chan result) {
 	}
 	taskdata, err := json.Marshal(data)
 	if err != nil {
-		PIPA.Log.Println(20, data.Url, data.Uuid, err)
+		PIPA.Log.Error(data.Url, data.Uuid, err)
 		res.resByte = nil
 		res.resErr = err
 		ch <- *res
@@ -250,7 +250,7 @@ func image(data TaskData, ch chan result) {
 	}
 	err = pushRequest(taskdata, PIPA.redis)
 	if err != nil {
-		PIPA.Log.Println(20, data.Url, data.Uuid, err)
+		PIPA.Log.Error(data.Url, data.Uuid, err)
 		res.resByte = nil
 		res.resErr = err
 		ch <- *res
@@ -258,7 +258,7 @@ func image(data TaskData, ch chan result) {
 	}
 	res.resByte, err = popResponse(data, PIPA.redis)
 	if err != nil {
-		PIPA.Log.Println(20, "popResponse err:", res.resByte, err)
+		PIPA.Log.Error("popResponse err:", res.resByte, err)
 		res.resErr = err
 		ch <- *res
 		return

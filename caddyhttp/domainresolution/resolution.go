@@ -11,17 +11,17 @@ import (
 const DnsServer = "114.114.114.114"
 
 func Resolution(r *http.Request) (err error) {
-	DOMAINRESOLUTION.Log.Println(10, "Enter domain resolution")
+	DOMAINRESOLUTION.Log.Info("Enter domain resolution")
 	// Get the corresponding target bucket address
 	rHost := r.Host
 	validDns, ok := DOMAINRESOLUTION.Cache.Get(rHost)
 	if ok != true {
-		DOMAINRESOLUTION.Log.Println(20, "Failed to find cache! ")
+		DOMAINRESOLUTION.Log.Info("Failed to find cache! ")
 		dst, err := CNAME(r.Host, DnsServer)
 		if err != nil {
 			return ErrInvalidDnsResolution
 		}
-		DOMAINRESOLUTION.Log.Println(10, "The domain name resolution address of the CNAME is:", dst)
+		DOMAINRESOLUTION.Log.Info("The domain name resolution address of the CNAME is:", dst)
 		for _, h := range dst {
 			var host string
 			if strings.HasSuffix(h, ".") {
@@ -35,15 +35,15 @@ func Resolution(r *http.Request) (err error) {
 			}
 			if valid.DomainBucket == host {
 				_ = DOMAINRESOLUTION.Cache.Set(r.Host, host)
-				DOMAINRESOLUTION.Log.Println(10, "Insert a key-value pair into the cache:  key =", r.Host, " value =", host)
+				DOMAINRESOLUTION.Log.Info("Insert a key-value pair into the cache:  key =", r.Host, " value =", host)
 				r.Host = host
 				return nil
 			}
 		}
 		return ErrAccessDenied
 	}
-	DOMAINRESOLUTION.Log.Println(20, "Succeed to find cache! ")
-	DOMAINRESOLUTION.Log.Println(10, "The parameters in the cache are:", validDns)
+	DOMAINRESOLUTION.Log.Info("Succeed to find cache! ")
+	DOMAINRESOLUTION.Log.Info("The parameters in the cache are:", validDns)
 	domainInfo, err := DOMAINRESOLUTION.Client.GetDomainOfBucketDomain(rHost)
 	if err != nil {
 		return err

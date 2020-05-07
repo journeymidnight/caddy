@@ -3,9 +3,7 @@ package caddylog
 import (
 	"github.com/journeymidnight/yig-front-caddy"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
-	"github.com/journeymidnight/yig-front-caddy/caddylog"
-	"os"
-	"strconv"
+	log "github.com/journeymidnight/yig-front-caddy/caddylog"
 )
 
 func init() {
@@ -17,13 +15,8 @@ func setup(c *caddy.Controller) error {
 	if err != nil {
 		return err
 	}
-
-	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		panic("Failed to open log file " + logPath)
-	}
-	logger = caddylog.New(f, "[yig-front-caddy]", caddylog.LstdFlags, logLevel)
-
+	level := log.ParseLevel(logLevel)
+	logger = log.NewFileLogger(logPath, level)
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return Log{Next: next, LogPath: logPath, LogLevel: logLevel}
 	})
@@ -31,7 +24,7 @@ func setup(c *caddy.Controller) error {
 	return nil
 }
 
-func setupCaddyLog(c *caddy.Controller) (logPath string, level int, err error) {
+func setupCaddyLog(c *caddy.Controller) (logPath string, level string, err error) {
 	for c.Next() {
 		for c.NextBlock() {
 			switch c.Val() {
@@ -45,12 +38,7 @@ func setupCaddyLog(c *caddy.Controller) (logPath string, level int, err error) {
 				if !c.NextArg() {
 					return logPath, level, c.ArgErr()
 				}
-				logLevel := c.Val()
-				logLevelInt, err := strconv.Atoi(logLevel)
-				if err != nil {
-					return logPath, level, err
-				}
-				level = logLevelInt
+				level = c.Val()
 				break
 			}
 		}
