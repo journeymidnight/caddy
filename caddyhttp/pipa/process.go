@@ -227,7 +227,7 @@ func image(data TaskData, ch chan result) {
 	var err error
 	PIPA.Log.Info("UUID is:", data.Uuid, "Url is:", data.Url)
 	res := new(result)
-	res.resByte, err = getImageFromRedis(data.Url, PIPA.redis)
+	res.resByte, err = PIPA.redis.getImageFromRedis(data.Url)
 	if len(res.resByte) > 0 {
 		if err != nil {
 			PIPA.Log.Error(data.Url, data.Uuid, err)
@@ -248,7 +248,7 @@ func image(data TaskData, ch chan result) {
 		ch <- *res
 		return
 	}
-	err = pushRequest(taskdata, PIPA.redis)
+	err = PIPA.redis.pushRequest(taskdata)
 	if err != nil {
 		PIPA.Log.Error(data.Url, data.Uuid, err)
 		res.resByte = nil
@@ -256,7 +256,7 @@ func image(data TaskData, ch chan result) {
 		ch <- *res
 		return
 	}
-	res.resByte, err = popResponse(data, PIPA.redis)
+	res.resByte, err = PIPA.redis.popResponse(data)
 	if err != nil {
 		PIPA.Log.Error("popResponse err:", res.resByte, err)
 		res.resErr = err
