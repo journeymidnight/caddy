@@ -1,6 +1,7 @@
 compress
 /var/log/caddy/access.log
 /var/log/caddy/error.log
+/var/log/caddy/yig-front-caddy.log
 {
     daily
     rotate 7
