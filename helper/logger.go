@@ -16,75 +16,17 @@
 
 package helper
 
-import (
-	"bufio"
-	"bytes"
-	"github.com/journeymidnight/yig-front-caddy/caddylog"
-	"os"
-	"runtime"
-	"runtime/debug"
-	"strconv"
-	"strings"
-)
+import log "github.com/journeymidnight/yig-front-caddy/caddylog"
 
-var Logger *caddylog.Logger
+// Global singleton loggers
+var Logger log.Logger
 
 type Log struct {
-	Logger *caddylog.Logger
+	Logger *log.Logger
 }
 
-// sysInfo returns useful system statistics.
-func sysInfo() map[string]string {
-	host, err := os.Hostname()
+func PanicOnError(err error, message string) {
 	if err != nil {
-		host = ""
+		panic(message + " " + err.Error())
 	}
-	memstats := &runtime.MemStats{}
-	runtime.ReadMemStats(memstats)
-	return map[string]string{
-		"host.name": host,
-		"host.os":   runtime.GOOS,
-		"host.arch": runtime.GOARCH,
-		"host.lang": runtime.Version(),
-		"host.cpus": strconv.Itoa(runtime.NumCPU()),
-	}
-}
-
-// stackInfo returns printable stack trace.
-func stackInfo() string {
-	// Convert stack-trace bytes to io.Reader.
-	rawStack := bufio.NewReader(bytes.NewBuffer(debug.Stack()))
-	// Skip stack trace lines until our real caller.
-	for i := 0; i <= 4; i++ {
-		rawStack.ReadLine()
-	}
-
-	// Read the rest of useful stack trace.
-	stackBuf := new(bytes.Buffer)
-	stackBuf.ReadFrom(rawStack)
-
-	// Strip GOPATH of the build system and return.
-	return strings.Replace(stackBuf.String(), "src/", "", -1)
-}
-
-// errorIf synonymous with fatalIf but doesn't exit on error != nil
-func ErrorIf(err error, msg string, data ...interface{}) {
-	if err == nil {
-		return
-	}
-	Logger.Printf(5, msg, data...)
-	Logger.Println(5, "With error: ", err.Error())
-	Logger.Println(5, "System Info: ", sysInfo())
-}
-
-// fatalIf wrapper function which takes error and prints error messages.
-func FatalIf(err error, msg string, data ...interface{}) {
-	if err == nil {
-		return
-	}
-	Logger.Printf(5, msg, data...)
-	Logger.Println(5, "With error: ", err.Error())
-	Logger.Println(5, "System Info: ", sysInfo())
-	Logger.Println(5, "Stack trace: ", stackInfo())
-	os.Exit(1)
 }
