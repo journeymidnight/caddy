@@ -17,6 +17,7 @@ replace (
 )
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
@@ -27,9 +28,10 @@ require (
 	github.com/dustin/go-humanize v0.0.0-20170228161531-259d2a102b87
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568
 	github.com/garyburd/redigo v1.6.0
+	github.com/go-redis/redis/v7 v7.2.0 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.2.0
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v0.0.0-20170718202341-a69d9f6de432
 	github.com/hashicorp/go-syslog v0.0.0-20170829120034-326bf4a7f709
@@ -46,11 +48,12 @@ require (
 	github.com/prometheus/client_golang v1.0.0
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/russross/blackfriday v0.0.0-20170610170232-067529f716f4
+	github.com/ugorji/go v1.1.7 // indirect
 	github.com/xenolf/lego v0.0.0-20181204200439-4e842a5eb6dc
 	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-00010101000000-000000000000
 	gopkg.in/square/go-jose.v2 v2.0.0-00010101000000-000000000000 // indirect
-	gopkg.in/yaml.v2 v2.2.1
+	gopkg.in/yaml.v2 v2.2.4
 	zvelo.io/ttlru v1.0.9
 )

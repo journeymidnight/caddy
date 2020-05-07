@@ -10,7 +10,7 @@ import (
 )
 
 func GetTlsFromFormData(r *http.Request) (tls string, tlsKey string, err error) {
-	DOMAIN.Log.Println(20, "Enter get tls from form data")
+	DOMAIN.Log.Info("Enter get tls from form data")
 	r.ParseMultipartForm(128 << 10)
 	if r.MultipartForm != nil {
 		tls = r.MultipartForm.Value["tls_domain"][0]
@@ -18,14 +18,14 @@ func GetTlsFromFormData(r *http.Request) (tls string, tlsKey string, err error) 
 		if tls == "" || tlsKey == "" {
 			return "", "", ErrFormDataParameterParsing
 		}
-		DOMAIN.Log.Println(20, "Get tls from form data succeed!")
+		DOMAIN.Log.Info("Get tls from form data succeed!")
 		return tls, tlsKey, nil
 	}
 	return "", "", ErrFormDataParameterParsing
 }
 
 func ValidTls(hostDomain, tlsCrt, tlsKey string) error {
-	DOMAIN.Log.Println(20, "Enter valid tls and tls key.")
+	DOMAIN.Log.Info("Enter valid tls and tls key.")
 	resultCrt, _ := Decode([]byte(tlsCrt))
 	if resultCrt.Type != "CERTIFICATE" {
 		return ErrInvalidTlsPem
@@ -52,7 +52,7 @@ func ValidTls(hostDomain, tlsCrt, tlsKey string) error {
 			}
 		}
 	}
-	DOMAIN.Log.Printf(20, "Got a %T with dns name : %v %v", pub, dnsName, hostDomain)
+	DOMAIN.Log.Info("Got a ", pub, "with dns name :", dnsName, hostDomain)
 	if !isHostMatched {
 		return ErrInvalidTlsPem
 	}

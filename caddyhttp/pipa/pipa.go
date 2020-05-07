@@ -52,10 +52,11 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 			w.WriteHeader(http.StatusOK)
 			return w.Write(nil)
 		}
-		p.Log.Println(10, "Enter Pipa Component:", r.Method, r.Host, r.Header, r.URL, "Key:", key)
+		p.Log.Info("Enter Pipa Component:", r.Method, r.Host, r.Header, r.URL, "Key:", key)
 		var status int
 		respose, err := imageFunc(r, key)
 		if err != nil {
+			p.Log.Error(err)
 			apiErrorCode, ok := err.(HandleError)
 			if ok {
 				status = apiErrorCode.HttpStatusCode()
@@ -71,10 +72,10 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 			return w.Write(respose)
 		}
 		w.WriteHeader(http.StatusOK)
-		p.Log.Println(10, http.StatusOK, "Picture processed successfully!")
+		p.Log.Info(http.StatusOK, "Picture processed successfully!")
 		return w.Write(respose)
 	} else {
-		p.Log.Println(10, "Pipa:", http.StatusOK, r.Method, r.Host, "Successfully linked yig")
+		p.Log.Info("Pipa:", http.StatusOK, r.Method, r.Host, "Successfully linked yig")
 		return p.Next.ServeHTTP(w, r)
 	}
 }

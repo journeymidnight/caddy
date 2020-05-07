@@ -35,7 +35,7 @@ func GetCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	if r.Method != "GET" {
 		return nil, ErrInvalidRequestMethod
 	}
-	DOMAIN.Log.Println(10, "Enter get custom domain")
+	DOMAIN.Log.Info("Enter get custom domain")
 	var data []byte
 	projectId := claim.ProjectId
 	bucketDomain := claim.BucketDomain
@@ -65,7 +65,7 @@ func NewCustomDomain(r *http.Request, claim *Claims) ([]byte, error) {
 	if r.Method != "PUT" {
 		return nil, ErrInvalidRequestMethod
 	}
-	DOMAIN.Log.Println(10, "Enter new custom domain")
+	DOMAIN.Log.Info("Enter new custom domain")
 	projectId := claim.ProjectId
 	domainHost := claim.DomainHost
 	bucket := claim.Bucket
@@ -116,7 +116,7 @@ func DelCustomDomain(r *http.Request, claim *Claims) error {
 	if r.Method != "DELETE" {
 		return ErrInvalidRequestMethod
 	}
-	DOMAIN.Log.Println(10, "Enter delete custom domain")
+	DOMAIN.Log.Info("Enter delete custom domain")
 	projectId := claim.ProjectId
 	domainHost := claim.DomainHost
 	if projectId == "" || domainHost == "" {
@@ -136,7 +136,7 @@ func PutCertificate(r *http.Request, claim *Claims) error {
 	if r.Method != "POST" {
 		return ErrInvalidRequestMethod
 	}
-	DOMAIN.Log.Println(10, "Enter put custom domain tls")
+	DOMAIN.Log.Info("Enter put custom domain tls")
 	projectId := claim.ProjectId
 	domainHost := claim.DomainHost
 	if projectId == "" || domainHost == "" {
@@ -167,7 +167,7 @@ func DelCertificate(r *http.Request, claim *Claims) (err error) {
 	if r.Method != "DELETE" {
 		return ErrInvalidRequestMethod
 	}
-	DOMAIN.Log.Println(10, "Enter delete custom domain tls")
+	DOMAIN.Log.Info("Enter delete custom domain tls")
 	projectId := claim.ProjectId
 	domainHost := claim.DomainHost
 	if projectId == "" || domainHost == "" {

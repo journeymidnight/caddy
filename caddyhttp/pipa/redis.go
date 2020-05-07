@@ -59,6 +59,6 @@ func getImageFromRedis(url string, pool *redis.Pool) (result []byte, err error) 
 	if err != nil {
 		return
 	}
-	PIPA.Log.Println(20, "Success get image from redis directly!")
+	PIPA.Log.Info("Success get image from redis directly!")
 	return
 }
