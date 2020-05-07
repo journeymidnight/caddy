@@ -26,6 +26,7 @@ require (
 	github.com/codahale/aesnicheck v0.0.0-20140702143623-349fcc471aac
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v0.0.0-20170228161531-259d2a102b87
+	github.com/fireworkmarks/yig v2.0.0+incompatible // indirect
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568
 	github.com/garyburd/redigo v1.6.0
 	github.com/go-redis/redis/v7 v7.2.0 // indirect
@@ -38,6 +39,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/jimstudt/http-authentication v0.0.0-20140401203705-3eca13d6893a
 	github.com/journeymidnight/aws-sdk-go v1.17.5
+	github.com/journeymidnight/yig v2.0.0+incompatible // indirect
 	github.com/klauspost/cpuid v0.0.0-20180102081000-ae832f27941a
 	github.com/lucas-clemente/aes12 v0.0.0-20171027163421-cd47fb39b79f // indirect
 	github.com/lucas-clemente/quic-go v0.11.1

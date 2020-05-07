@@ -1,7 +1,6 @@
 package pipa
 
 import (
-	"github.com/garyburd/redigo/redis"
 	. "github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
@@ -18,7 +17,7 @@ var CommonS3ResponseHeaders = []string{"Content-Length", "Content-Type", "Connec
 
 type Pipa struct {
 	Next            httpserver.Handler
-	redis           *redis.Pool
+	redis           Redis
 	Log             *caddylog.Logger
 	SecretKey       string
 	S3Client        *TidbClient

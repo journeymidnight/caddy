@@ -3,7 +3,6 @@ package pipa
 import (
 	caddy "github.com/journeymidnight/yig-front-caddy"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
-	"strconv"
 )
 
 func init() {
@@ -15,14 +14,14 @@ func init() {
 
 // setup configures a new mime middleware instance.
 func setup(c *caddy.Controller) error {
-	redisMaxIdle, redisAddress, redisPwd, secretKey, reservedOrigins, err := pipaParse(c)
+	redisAddrs, redisPwd, secretKey, reservedOrigins, err := pipaParse(c)
 	if err != nil {
 		return err
 	}
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return Pipa{
 			Next:            next,
-			redis:           newRedisPool(redisMaxIdle, redisAddress, redisPwd),
+			redis:           newRedis(redisAddrs, redisPwd),
 			SecretKey:       secretKey,
 			ReservedOrigins: reservedOrigins,
 		}
@@ -30,28 +29,18 @@ func setup(c *caddy.Controller) error {
 	return nil
 }
 
-func pipaParse(c *caddy.Controller) (redisMaxIdle int, redisAddress, redisPwd, secretKey string, reservedOrigins []string, err error) {
+func pipaParse(c *caddy.Controller) (redisAddress []string, redisPwd, secretKey string, reservedOrigins []string, err error) {
 	for c.Next() {
 		for c.NextBlock() {
 			ext := c.Val()
 			switch ext {
-			case "redis_maxIdle":
-				if !c.NextArg() {
-					err = c.ArgErr()
-					return
-				}
-				key := c.Val()
-				redisMaxIdle, err = strconv.Atoi(key)
-				if err != nil {
-					return
-				}
-				break
 			case "redis_address":
 				if !c.NextArg() {
 					err = c.ArgErr()
 					return
 				}
-				redisAddress = c.Val()
+				redisAddress = append(redisAddress, c.Val())
+				redisAddress = getAddrs(c, redisAddress)
 				break
 			case "redis_password":
 				if !c.NextArg() {
@@ -77,4 +66,12 @@ func pipaParse(c *caddy.Controller) (redisMaxIdle int, redisAddress, redisPwd, s
 		}
 	}
 	return
+}
+
+func getAddrs(c *caddy.Controller, addrs []string) []string {
+	if c.NextArg() {
+		addrs = append(addrs, c.Val())
+		addrs = getAddrs(c, addrs)
+	}
+	return addrs
 }
