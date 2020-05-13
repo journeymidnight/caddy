@@ -20,6 +20,7 @@ func setup(c *caddy.Controller) error {
 	}
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return Pipa{
+			Next:            next,
 			SecretKey:       secretKey,
 			ReservedOrigins: reservedOrigins,
 		}
@@ -44,6 +45,7 @@ func pipaParse(c *caddy.Controller) (secretKey string, reservedOrigins []string,
 					err = c.ArgErr()
 					return
 				}
+				reservedOrigins = args
 			}
 		}
 	}

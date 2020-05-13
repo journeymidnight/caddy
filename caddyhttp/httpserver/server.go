@@ -116,6 +116,8 @@ func NewServer(addr string, group []*SiteConfig, db map[string]*tidbclient.TidbC
 		Server:      makeHTTPServerWithTimeouts(addr, group),
 		vhosts:      newVHostTrie(),
 		sites:       group,
+		database:    db,
+		redis:       redis,
 		connTimeout: GracefulTimeout,
 	}
 
