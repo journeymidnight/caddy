@@ -19,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/journeymidnight/yig-front-caddy/caddydb"
+	"github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"log"
 	"net"
 	"net/url"
@@ -182,6 +183,8 @@ func (h *httpContext) InspectServerBlocks(sourceFile string, serverBlocks []cadd
 			caddydbConfig := caddydb.NewConfig()
 			caddydbConfig.Hostname = addr.Host
 
+			caddyRedisConfig := caddyredis.NewConfig()
+
 			// Make our caddytls.Config, which has a pointer to the
 			// instance's certificate cache and enough information
 			// to use automatic HTTPS when the time comes
@@ -196,6 +199,7 @@ func (h *httpContext) InspectServerBlocks(sourceFile string, serverBlocks []cadd
 				Root:            Root,
 				TLS:             caddytlsConfig,
 				DB:              caddydbConfig,
+				Redis:           caddyRedisConfig,
 				originCaddyfile: sourceFile,
 				IndexPages:      staticfiles.DefaultIndexPages,
 			}
@@ -295,10 +299,13 @@ func (h *httpContext) MakeServers() ([]caddy.Server, error) {
 		return nil, err
 	}
 
+	// Initialize global configuration items
+	server := NewGlobalServerItems(groups)
+
 	// then we create a server for each group
 	var servers []caddy.Server
 	for addr, group := range groups {
-		s, err := NewServer(addr, group)
+		s, err := NewServer(addr, group, server)
 		if err != nil {
 			return nil, err
 		}

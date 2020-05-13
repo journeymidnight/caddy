@@ -1,13 +1,15 @@
 package pipa
 
 import (
+	"net/http"
+	"strings"
+
 	. "github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/httpserver"
 	"github.com/journeymidnight/yig-front-caddy/caddylog"
+	. "github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"github.com/journeymidnight/yig-front-caddy/helper"
-	"net/http"
-	"strings"
 )
 
 var PIPA Pipa
@@ -17,7 +19,7 @@ var CommonS3ResponseHeaders = []string{"Content-Length", "Content-Type", "Connec
 
 type Pipa struct {
 	Next            httpserver.Handler
-	redis           Redis
+	Redis           *Redis
 	Log             *caddylog.Logger
 	SecretKey       string
 	S3Client        *TidbClient
@@ -31,6 +33,8 @@ func (p Pipa) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	clients := r.Context().Value("database").(map[string]*TidbClient)
 	p.S3Client = clients["yig"]
 	p.CaddyClient = clients["caddy"]
+	redis := r.Context().Value("redis").(*Redis)
+	p.Redis = redis
 	PIPA = p
 	key := r.URL.Query().Get(IMAGEKEY)
 	if key != "" {

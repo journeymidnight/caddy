@@ -20,8 +20,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/journeymidnight/yig-front-caddy/caddydb"
-	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
+	"github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"log"
 	"net"
 	"net/http"
@@ -35,6 +34,8 @@ import (
 	"time"
 
 	"github.com/journeymidnight/yig-front-caddy"
+	"github.com/journeymidnight/yig-front-caddy/caddydb"
+	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/staticfiles"
 	"github.com/journeymidnight/yig-front-caddy/caddytls"
 	"github.com/journeymidnight/yig-front-caddy/telemetry"
@@ -52,6 +53,7 @@ type Server struct {
 	tlsGovChan  chan struct{} // close to stop the TLS maintenance goroutine
 	vhosts      *vhostTrie
 	database    map[string]*tidbclient.TidbClient
+	redis       *caddyredis.Redis
 }
 
 // ensure it satisfies the interface
@@ -75,12 +77,30 @@ func makeTLSConfig(group []*SiteConfig) (*tls.Config, error) {
 	return caddytls.MakeTLSConfig(tlsConfigs)
 }
 
-func makeDBConfig(group []*SiteConfig) map[string]*tidbclient.TidbClient {
-	var dbConfigs []*caddydb.Config
-	for i := range group {
-		dbConfigs = append(dbConfigs, group[i].DB)
+func makeDBConfig(groups map[string][]*SiteConfig) map[string]*tidbclient.TidbClient {
+	var dbConfig *caddydb.Config
+	for _, group := range groups {
+		for i := range group {
+			if dbConfig != nil {
+				panic("Too many database configuration items were initialized, please check the configuration file")
+			}
+			dbConfig = group[i].DB
+		}
 	}
-	return caddydb.MakeTLSConfig(dbConfigs)
+	return caddydb.MakeDBConfig(dbConfig)
+}
+
+func makeRedisConfig(groups map[string][]*SiteConfig) *caddyredis.Redis {
+	var Config *caddyredis.Config
+	for _, group := range groups {
+		for i := range group {
+			if Config != nil {
+				panic("Too many database configuration items were initialized, please check the configuration file")
+			}
+			Config = group[i].Redis
+		}
+	}
+	return caddyredis.MakeRedisConfig(Config)
 }
 
 func getFallbacks(sites []*SiteConfig) []string {
@@ -93,26 +113,24 @@ func getFallbacks(sites []*SiteConfig) []string {
 	return fallbacks
 }
 
-// NewServer creates a new Server instance that will listen on addr
-// and will serve the sites configured in group.
-func NewServer(addr string, group []*SiteConfig) (*Server, error) {
-	s := &Server{
-		Server:      makeHTTPServerWithTimeouts(addr, group),
-		vhosts:      newVHostTrie(),
-		sites:       group,
-		connTimeout: GracefulTimeout,
+// NewGlobalServerItems creates Servers that will serve the sites global configured in group
+func NewGlobalServerItems(groups map[string][]*SiteConfig) *Server {
+	return &Server{
+		database: makeDBConfig(groups),
+		redis:    makeRedisConfig(groups),
 	}
+}
+
+// NewServer sets a new Server instance that will listen on addr
+// and will serve the sites configured in group.
+func NewServer(addr string, group []*SiteConfig, s *Server) (*Server, error) {
+	s.Server = makeHTTPServerWithTimeouts(addr, group)
+	s.vhosts = newVHostTrie()
+	s.sites = group
+	s.connTimeout = GracefulTimeout
 	s.vhosts.fallbackHosts = append(s.vhosts.fallbackHosts, getFallbacks(group)...)
 	s.Server = makeHTTPServerWithHeaderLimit(s.Server, group)
 	s.Server.Handler = s // this is weird, but whatever
-
-	clients := makeDBConfig(group)
-	var keys []string
-	for key, _ := range clients {
-		keys = append(keys, key)
-	}
-	fmt.Println("Already loaded database connections:", keys)
-	s.database = clients
 
 	// extract TLS settings from each site config to build
 	// a tls.Config, which will not be nil if TLS is enabled
@@ -462,6 +480,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) (int, error) 
 	}
 
 	ctx := context.WithValue(r.Context(), "database", s.database)
+	ctx = context.WithValue(ctx, "redis", s.redis)
 	return vhost.middlewareChain.ServeHTTP(w, r.WithContext(ctx))
 }
 

@@ -1,4 +1,4 @@
-package pipa
+package caddyredis
 
 import (
 	"github.com/go-redis/redis/v7"
@@ -7,21 +7,52 @@ import (
 	"time"
 )
 
-type Redis interface {
-	pushRequest(data []byte) (err error)
-	popResponse(data TaskData) (result []byte, err error)
-	getImageFromRedis(url string) (result []byte, err error)
+type RedisInfo struct {
+	MaxRetries     int
+	ConnectTimeout int
+	ReadTimeout    int
+	WriteTimeout   int
 }
 
-func newRedis(server []string, password string) (redisConn Redis) {
-	if len(server) == 1 {
-		r := InitializeSingle(server[0], password)
-		redisConn = r.(Redis)
-		return redisConn
+type Redis struct {
+	single  bool
+	client  *SingleRedis
+	cluster *ClusterRedis
+}
+
+var redisConn Redis
+
+func (r *Redis) PushRequest(data []byte) (err error) {
+	if r.single {
+		return r.client.pushRequest(data)
+	}
+	return r.cluster.pushRequest(data)
+}
+
+func (r *Redis) PopResponse(uuid, url string) (result []byte, err error) {
+	if r.single {
+		return r.client.popResponse(uuid, url)
+	}
+	return r.cluster.popResponse(uuid, url)
+}
+
+func (r *Redis) GetImageFromRedis(url string) (result []byte, err error) {
+	if r.single {
+		return r.client.getImageFromRedis(url)
+	}
+	return r.cluster.getImageFromRedis(url)
+}
+
+func newRedis(info Config) *Redis {
+	redis := &Redis{}
+	if len(info.Address) == 1 {
+		redis.single = true
+		redis.client = InitializeSingle(info)
+		return redis
 	} else {
-		r := InitializeCluster(server, password)
-		redisConn = r.(Redis)
-		return redisConn
+		redis.single = false
+		redis.cluster = InitializeCluster(info)
+		return redis
 	}
 }
 
@@ -29,25 +60,23 @@ type SingleRedis struct {
 	client *redis.Client
 }
 
-func InitializeSingle(server, password string) interface{} {
+func InitializeSingle(info Config) *SingleRedis {
 	options := &redis.Options{
-		Addr:         server,
+		Addr:         info.Address[0],
 		DialTimeout:  time.Duration(5) * time.Second,
 		ReadTimeout:  time.Duration(5) * time.Second,
 		WriteTimeout: time.Duration(5) * time.Second,
 		IdleTimeout:  time.Duration(30) * time.Second,
 	}
-	if password != "" {
-		options.Password = password
+	if info.Password != "" {
+		options.Password = info.Password
 	}
 	client := redis.NewClient(options)
 	_, err := client.Ping().Result()
 	if err != nil {
-		PIPA.Log.Error("redis PING err:", err)
-		return nil
+		panic(err)
 	}
-	r := &SingleRedis{client: client}
-	return interface{}(r)
+	return &SingleRedis{client: client}
 }
 
 func (s *SingleRedis) pushRequest(data []byte) (err error) {
@@ -57,10 +86,10 @@ func (s *SingleRedis) pushRequest(data []byte) (err error) {
 	return
 }
 
-func (s *SingleRedis) popResponse(data TaskData) (result []byte, err error) {
+func (s *SingleRedis) popResponse(uuid, url string) (result []byte, err error) {
 	redis_conn := s.client.Conn()
 	defer redis_conn.Close()
-	response, err := redis_conn.BRPop(time.Duration(30)*time.Second, data.Uuid).Result()
+	response, err := redis_conn.BRPop(time.Duration(30)*time.Second, uuid).Result()
 	if response == nil {
 		return nil, ErrTimeout
 	}
@@ -68,7 +97,7 @@ func (s *SingleRedis) popResponse(data TaskData) (result []byte, err error) {
 	if pipaResult[0] != "200" {
 		return []byte(response[1]), ErrInternalServer
 	} else {
-		result, err = redis_conn.Get(data.Url).Bytes()
+		result, err = redis_conn.Get(url).Bytes()
 		if err != nil {
 			return
 		}
@@ -83,7 +112,6 @@ func (s *SingleRedis) getImageFromRedis(url string) (result []byte, err error) {
 	if err != nil {
 		return
 	}
-	PIPA.Log.Info("Success get image from redis directly!")
 	return
 }
 
@@ -91,25 +119,23 @@ type ClusterRedis struct {
 	cluster *redis.ClusterClient
 }
 
-func InitializeCluster(server []string, password string) interface{} {
+func InitializeCluster(info Config) *ClusterRedis {
 	clusterRedis := &redis.ClusterOptions{
-		Addrs:        server,
-		DialTimeout:  time.Duration(5) * time.Second,
-		ReadTimeout:  time.Duration(5) * time.Second,
-		WriteTimeout: time.Duration(5) * time.Second,
+		Addrs:        info.Address,
+		DialTimeout:  time.Duration(info.ConnectTimeout) * time.Second,
+		ReadTimeout:  time.Duration(info.ReadTimeout) * time.Second,
+		WriteTimeout: time.Duration(info.WriteTimeout) * time.Second,
 		IdleTimeout:  time.Duration(30) * time.Second,
 	}
-	if password != "" {
-		clusterRedis.Password = password
+	if info.Password != "" {
+		clusterRedis.Password = info.Password
 	}
 	cluster := redis.NewClusterClient(clusterRedis)
 	_, err := cluster.Ping().Result()
 	if err != nil {
-		PIPA.Log.Error("Cluster Mode redis PING err:", err)
-		return nil
+		panic(err)
 	}
-	r := &ClusterRedis{cluster: cluster}
-	return interface{}(r)
+	return &ClusterRedis{cluster: cluster}
 }
 
 func (c *ClusterRedis) pushRequest(data []byte) (err error) {
@@ -118,9 +144,9 @@ func (c *ClusterRedis) pushRequest(data []byte) (err error) {
 	return
 }
 
-func (c *ClusterRedis) popResponse(data TaskData) (result []byte, err error) {
+func (c *ClusterRedis) popResponse(uuid, url string) (result []byte, err error) {
 	redis_conn := c.cluster
-	response, err := redis_conn.BRPop(time.Duration(30)*time.Second, data.Uuid).Result()
+	response, err := redis_conn.BRPop(time.Duration(30)*time.Second, uuid).Result()
 	if response == nil {
 		return nil, ErrTimeout
 	}
@@ -128,7 +154,7 @@ func (c *ClusterRedis) popResponse(data TaskData) (result []byte, err error) {
 	if pipaResult[0] != "200" {
 		return []byte(response[1]), ErrInternalServer
 	} else {
-		result, err = redis_conn.Get(data.Url).Bytes()
+		result, err = redis_conn.Get(url).Bytes()
 		if err != nil {
 			return
 		}
@@ -142,6 +168,5 @@ func (c *ClusterRedis) getImageFromRedis(url string) (result []byte, err error) 
 	if err != nil {
 		return
 	}
-	PIPA.Log.Info("Success get image from redis directly!")
 	return
 }
