@@ -142,7 +142,18 @@ func InitializeCluster(info Config) *ClusterRedis {
 
 func (c *ClusterRedis) pushRequest(data []byte) (err error) {
 	redis_conn := c.cluster
+	_, err = redis_conn.Ping().Result()
+	if err != nil {
+		for {
+			if _, err = redis_conn.Ping().Result(); err == nil {
+				break
+			}
+		}
+	}
 	_, err = redis_conn.LPush("taskQueue", data).Result()
+	if err != nil {
+		fmt.Println("err LPush info:", err)
+	}
 	return
 }
 
