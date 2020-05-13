@@ -29,7 +29,7 @@ require (
 	github.com/fireworkmarks/yig v2.0.0+incompatible // indirect
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568
 	github.com/garyburd/redigo v1.6.0
-	github.com/go-redis/redis/v7 v7.2.0 // indirect
+	github.com/go-redis/redis/v7 v7.2.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.2

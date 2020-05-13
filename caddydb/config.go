@@ -1,6 +1,7 @@
 package caddydb
 
 import (
+	"fmt"
 	"github.com/journeymidnight/yig-front-caddy"
 	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	"strings"
@@ -27,18 +28,21 @@ func NewConfig() *Config {
 	return cfg
 }
 
-func MakeTLSConfig(group []*Config) map[string]*tidbclient.TidbClient {
+func MakeDBConfig(cfg *Config) map[string]*tidbclient.TidbClient {
 	clients := make(map[string]*tidbclient.TidbClient)
-	for _, cfg := range group {
-		for _, conn := range cfg.Clients {
-			keyAll := strings.Split(conn, "/")
-			key := keyAll[1]
-			if clients[key] != nil {
-				continue
-			}
-			clients[key] = tidbclient.NewTidbClient(conn, cfg.DBInfo)
+	for _, conn := range cfg.Clients {
+		keyAll := strings.Split(conn, "/")
+		key := keyAll[1]
+		if clients[key] != nil {
+			continue
 		}
+		clients[key] = tidbclient.NewTidbClient(conn, cfg.DBInfo)
 	}
+	var keys []string
+	for key, _ := range clients {
+		keys = append(keys, key)
+	}
+	fmt.Println("Already loaded database connections:", keys)
 	return clients
 }
 

@@ -3,11 +3,12 @@ package pipa
 import (
 	"encoding/json"
 	"encoding/xml"
+	"net/http"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/journeymidnight/yig-front-caddy/caddydb/types"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
-	"net/http"
-	"strings"
 )
 
 const (
@@ -227,7 +228,10 @@ func image(data TaskData, ch chan result) {
 	var err error
 	PIPA.Log.Info("UUID is:", data.Uuid, "Url is:", data.Url)
 	res := new(result)
-	res.resByte, err = PIPA.redis.getImageFromRedis(data.Url)
+	res.resByte, err = PIPA.Redis.GetImageFromRedis(data.Url)
+	if err != nil {
+		PIPA.Log.Error("Get Image From Redis err:", err)
+	}
 	if len(res.resByte) > 0 {
 		if err != nil {
 			PIPA.Log.Error(data.Url, data.Uuid, err)
@@ -248,17 +252,17 @@ func image(data TaskData, ch chan result) {
 		ch <- *res
 		return
 	}
-	err = PIPA.redis.pushRequest(taskdata)
+	err = PIPA.Redis.PushRequest(taskdata)
 	if err != nil {
-		PIPA.Log.Error(data.Url, data.Uuid, err)
+		PIPA.Log.Error("Push Request to redis err:", data.Url, data.Uuid, err)
 		res.resByte = nil
 		res.resErr = err
 		ch <- *res
 		return
 	}
-	res.resByte, err = PIPA.redis.popResponse(data)
+	res.resByte, err = PIPA.Redis.PopResponse(data.Uuid, data.Url)
 	if err != nil {
-		PIPA.Log.Error("popResponse err:", res.resByte, err)
+		PIPA.Log.Error("pop redis Response err:", res.resByte, err)
 		res.resErr = err
 		ch <- *res
 		return
