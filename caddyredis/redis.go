@@ -46,7 +46,7 @@ func (r *Redis) GetImageFromRedis(url string) (result []byte, err error) {
 
 func newRedis(info Config) *Redis {
 	redis := &Redis{}
-	fmt.Print("Redis is configured as:", info)
+	fmt.Print("Redis is configured as:", info.Address, len(info.Address) == 1, "\n")
 	if len(info.Address) == 1 {
 		redis.single = true
 		redis.client = InitializeSingle(info)
