@@ -78,29 +78,25 @@ func makeTLSConfig(group []*SiteConfig) (*tls.Config, error) {
 }
 
 func makeDBConfig(groups map[string][]*SiteConfig) map[string]*tidbclient.TidbClient {
-	var dbConfig *caddydb.Config
+	config := &caddydb.Config{}
 	for _, group := range groups {
 		for i := range group {
-			if dbConfig != nil {
-				panic("Too many database configuration items were initialized, please check the configuration file")
-			}
-			dbConfig = group[i].DB
+			config = group[i].DB
 		}
 	}
-	return caddydb.MakeDBConfig(dbConfig)
+	return caddydb.MakeDBConfig(config)
 }
 
 func makeRedisConfig(groups map[string][]*SiteConfig) *caddyredis.Redis {
-	var Config *caddyredis.Config
+	config := &caddyredis.Config{}
 	for _, group := range groups {
 		for i := range group {
-			if Config != nil {
-				panic("Too many database configuration items were initialized, please check the configuration file")
+			if group[i].Redis.Address != nil {
+				config = group[i].Redis
 			}
-			Config = group[i].Redis
 		}
 	}
-	return caddyredis.MakeRedisConfig(Config)
+	return caddyredis.MakeRedisConfig(config)
 }
 
 func getFallbacks(sites []*SiteConfig) []string {
@@ -113,21 +109,16 @@ func getFallbacks(sites []*SiteConfig) []string {
 	return fallbacks
 }
 
-// NewGlobalServerItems creates Servers that will serve the sites global configured in group
-func NewGlobalServerItems(groups map[string][]*SiteConfig) *Server {
-	return &Server{
-		database: makeDBConfig(groups),
-		redis:    makeRedisConfig(groups),
-	}
-}
-
 // NewServer sets a new Server instance that will listen on addr
 // and will serve the sites configured in group.
-func NewServer(addr string, group []*SiteConfig, s *Server) (*Server, error) {
-	s.Server = makeHTTPServerWithTimeouts(addr, group)
-	s.vhosts = newVHostTrie()
-	s.sites = group
-	s.connTimeout = GracefulTimeout
+func NewServer(addr string, group []*SiteConfig, db map[string]*tidbclient.TidbClient, redis *caddyredis.Redis) (*Server, error) {
+	s := &Server{
+		Server:      makeHTTPServerWithTimeouts(addr, group),
+		vhosts:      newVHostTrie(),
+		sites:       group,
+		connTimeout: GracefulTimeout,
+	}
+
 	s.vhosts.fallbackHosts = append(s.vhosts.fallbackHosts, getFallbacks(group)...)
 	s.Server = makeHTTPServerWithHeaderLimit(s.Server, group)
 	s.Server.Handler = s // this is weird, but whatever

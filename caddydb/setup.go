@@ -13,11 +13,11 @@ func init() {
 func setupDB(c *caddy.Controller) error {
 	configGetter, ok := configGetters[c.ServerType()]
 	if !ok {
-		return fmt.Errorf("no caddytls.ConfigGetter for %s server type; must call RegisterConfigGetter", c.ServerType())
+		return fmt.Errorf("no caddydatabase.ConfigGetter for %s server type; must call RegisterConfigGetter", c.ServerType())
 	}
 	config := configGetter(c)
 	if config == nil {
-		return fmt.Errorf("no caddytls.Config to set up for %s", c.Key)
+		return fmt.Errorf("no caddydatabase.Config to set up for %s", c.Key)
 	}
 
 	var hadBlock bool
