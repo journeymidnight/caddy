@@ -1,6 +1,7 @@
 package caddyredis
 
 import (
+	"fmt"
 	"github.com/go-redis/redis/v7"
 	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
 	"strings"
@@ -45,6 +46,7 @@ func (r *Redis) GetImageFromRedis(url string) (result []byte, err error) {
 
 func newRedis(info Config) *Redis {
 	redis := &Redis{}
+	fmt.Print("Redis is configured as:", info)
 	if len(info.Address) == 1 {
 		redis.single = true
 		redis.client = InitializeSingle(info)

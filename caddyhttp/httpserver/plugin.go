@@ -70,6 +70,7 @@ func init() {
 	caddy.RegisterParsingCallback(serverType, "tls", activateHTTPS)
 	caddytls.RegisterConfigGetter(serverType, func(c *caddy.Controller) *caddytls.Config { return GetConfig(c).TLS })
 	caddydb.RegisterConfigGetter(serverType, func(c *caddy.Controller) *caddydb.Config { return GetConfig(c).DB })
+	caddyredis.RegisterConfigGetter(serverType, func(c *caddy.Controller) *caddyredis.Config { return GetConfig(c).Redis })
 
 	// disable the caddytls package reporting ClientHellos
 	// to telemetry, since our MITM detector does this but
@@ -300,12 +301,13 @@ func (h *httpContext) MakeServers() ([]caddy.Server, error) {
 	}
 
 	// Initialize global configuration items
-	server := NewGlobalServerItems(groups)
+	db := makeDBConfig(groups)
+	redis := makeRedisConfig(groups)
 
 	// then we create a server for each group
 	var servers []caddy.Server
 	for addr, group := range groups {
-		s, err := NewServer(addr, group, server)
+		s, err := NewServer(addr, group, db, redis)
 		if err != nil {
 			return nil, err
 		}
@@ -610,6 +612,7 @@ var directives = []string{
 	"limits",
 	"timeouts",
 	"database",
+	"redis",
 	"tls",
 
 	// services/utilities, or other directives that don't necessarily inject handlers
