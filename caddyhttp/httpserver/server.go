@@ -81,7 +81,9 @@ func makeDBConfig(groups map[string][]*SiteConfig) map[string]*tidbclient.TidbCl
 	config := &caddydb.Config{}
 	for _, group := range groups {
 		for i := range group {
-			config = group[i].DB
+			if group[i].DB.Clients != nil {
+				config = group[i].DB
+			}
 		}
 	}
 	return caddydb.MakeDBConfig(config)

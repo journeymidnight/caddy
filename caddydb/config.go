@@ -14,17 +14,7 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	var yigC, caddyC string
-	yigC = DefaultYigSource
-	caddyC = DefaultCaddySource
-	clients := []string{yigC, caddyC}
-	var dbInfo tidbclient.DBInfo
-	dbInfo.DBMaxIdleConns = DefaultDBMaxIdleConns
-	dbInfo.DBMaxOpenConns = DefaultDBMaxOpenConns
-	dbInfo.DBConnMaxLifeSeconds = DefaultDBConnMaxLifeSeconds
 	cfg := new(Config)
-	cfg.DBInfo = dbInfo
-	cfg.Clients = clients
 	return cfg
 }
 
@@ -54,12 +44,3 @@ var configGetters = make(map[string]ConfigGetter)
 func RegisterConfigGetter(serverType string, fn ConfigGetter) {
 	configGetters[serverType] = fn
 }
-
-const (
-	DefaultYigSource            = "root:@tcp(10.5.0.17:4000)/yig"
-	DefaultCaddySource          = "root:@tcp(10.5.0.17:4000)/caddy"
-	DefaultDBMaxIdleConns       = 1024
-	DefaultDBMaxOpenConns       = 10240
-	DefaultDBConnMaxLifeSeconds = 300
-	ClientsCacheInstStorageKey  = "cli_cert_cache"
-)
