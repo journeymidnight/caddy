@@ -26,6 +26,9 @@ func GetMethodFromJWT(r *http.Request, secretKey string) (claim *Claims, err err
 	PIPA.Log.Info("Enter get method from JWT")
 	tokenString := r.Header.Get("Authorization")
 	tokenStrings := strings.Split(tokenString, " ")
+	if len(tokenStrings) < 2 {
+		return nil, ErrInvalidJwtParams
+	}
 	token, err := jwt.ParseWithClaims(tokenStrings[1], &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
 	})
