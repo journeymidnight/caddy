@@ -77,28 +77,22 @@ func makeTLSConfig(group []*SiteConfig) (*tls.Config, error) {
 	return caddytls.MakeTLSConfig(tlsConfigs)
 }
 
-func makeDBConfig(groups map[string][]*SiteConfig) map[string]*tidbclient.TidbClient {
-	config := &caddydb.Config{}
-	for _, group := range groups {
-		for i := range group {
-			if group[i].DB.Clients != nil {
-				config = group[i].DB
-			}
-		}
+func makeDBConfig(group []*SiteConfig) map[string]*tidbclient.TidbClient {
+	var Configs []*caddydb.Config
+	for i := range group {
+		Configs = append(Configs, group[i].DB)
 	}
-	return caddydb.MakeDBConfig(config)
+	return caddydb.MakeDBConfig(Configs)
 }
 
-func makeRedisConfig(groups map[string][]*SiteConfig) *caddyredis.Redis {
-	config := &caddyredis.Config{}
-	for _, group := range groups {
-		for i := range group {
-			if group[i].Redis.Address != nil {
-				config = group[i].Redis
-			}
+func makeRedisConfig(group []*SiteConfig) *caddyredis.Redis {
+	var configs []*caddyredis.Config
+	for i := range group {
+		if group[i].Redis.Address != nil {
+			configs = append(configs, group[i].Redis)
 		}
 	}
-	return caddyredis.MakeRedisConfig(config)
+	return caddyredis.MakeRedisConfig(configs)
 }
 
 func getFallbacks(sites []*SiteConfig) []string {
@@ -113,13 +107,13 @@ func getFallbacks(sites []*SiteConfig) []string {
 
 // NewServer sets a new Server instance that will listen on addr
 // and will serve the sites configured in group.
-func NewServer(addr string, group []*SiteConfig, db map[string]*tidbclient.TidbClient, redis *caddyredis.Redis) (*Server, error) {
+func NewServer(addr string, group []*SiteConfig) (*Server, error) {
 	s := &Server{
 		Server:      makeHTTPServerWithTimeouts(addr, group),
 		vhosts:      newVHostTrie(),
 		sites:       group,
-		database:    db,
-		redis:       redis,
+		database:    makeDBConfig(group),
+		redis:       makeRedisConfig(group),
 		connTimeout: GracefulTimeout,
 	}
 

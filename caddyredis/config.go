@@ -15,9 +15,10 @@ func NewConfig() *Config {
 	return cfg
 }
 
-func MakeRedisConfig(group *Config) *Redis {
-	var redis *Redis
-	redis = newRedis(*group)
+func MakeRedisConfig(group []*Config) (redis *Redis) {
+	for _, cfg := range group {
+		redis = newRedis(cfg)
+	}
 	return redis
 }
 

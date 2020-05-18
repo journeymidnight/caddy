@@ -44,17 +44,17 @@ func (r *Redis) GetImageFromRedis(url string) (result []byte, err error) {
 	return r.cluster.getImageFromRedis(url)
 }
 
-func newRedis(info Config) *Redis {
-	redis := &Redis{}
+func newRedis(info *Config) *Redis {
+	r := new(Redis)
 	fmt.Print("Redis is configured as:", info.Address, len(info.Address) == 1, "\n")
 	if len(info.Address) == 1 {
-		redis.single = true
-		redis.client = InitializeSingle(info)
-		return redis
+		r.single = true
+		r.client = InitializeSingle(info)
+		return r
 	} else {
-		redis.single = false
-		redis.cluster = InitializeCluster(info)
-		return redis
+		r.single = false
+		r.cluster = InitializeCluster(info)
+		return r
 	}
 }
 
@@ -62,7 +62,7 @@ type SingleRedis struct {
 	client *redis.Client
 }
 
-func InitializeSingle(info Config) *SingleRedis {
+func InitializeSingle(info *Config) *SingleRedis {
 	options := &redis.Options{
 		Addr:         info.Address[0],
 		DialTimeout:  time.Duration(5) * time.Second,
@@ -121,7 +121,7 @@ type ClusterRedis struct {
 	cluster *redis.ClusterClient
 }
 
-func InitializeCluster(info Config) *ClusterRedis {
+func InitializeCluster(info *Config) *ClusterRedis {
 	clusterRedis := &redis.ClusterOptions{
 		Addrs:        info.Address,
 		DialTimeout:  time.Duration(info.ConnectTimeout) * time.Second,
@@ -142,14 +142,6 @@ func InitializeCluster(info Config) *ClusterRedis {
 
 func (c *ClusterRedis) pushRequest(data []byte) (err error) {
 	redis_conn := c.cluster
-	_, err = redis_conn.Ping().Result()
-	if err != nil {
-		for {
-			if _, err = redis_conn.Ping().Result(); err == nil {
-				break
-			}
-		}
-	}
 	_, err = redis_conn.LPush("taskQueue", data).Result()
 	if err != nil {
 		fmt.Println("err LPush info:", err)
@@ -160,6 +152,9 @@ func (c *ClusterRedis) pushRequest(data []byte) (err error) {
 func (c *ClusterRedis) popResponse(uuid, url string) (result []byte, err error) {
 	redis_conn := c.cluster
 	response, err := redis_conn.BRPop(time.Duration(30)*time.Second, uuid).Result()
+	if err != nil {
+		return nil, err
+	}
 	if response == nil {
 		return nil, ErrTimeout
 	}
