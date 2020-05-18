@@ -300,14 +300,10 @@ func (h *httpContext) MakeServers() ([]caddy.Server, error) {
 		return nil, err
 	}
 
-	// Initialize global configuration items
-	db := makeDBConfig(groups)
-	redis := makeRedisConfig(groups)
-
 	// then we create a server for each group
 	var servers []caddy.Server
 	for addr, group := range groups {
-		s, err := NewServer(addr, group, db, redis)
+		s, err := NewServer(addr, group)
 		if err != nil {
 			return nil, err
 		}
