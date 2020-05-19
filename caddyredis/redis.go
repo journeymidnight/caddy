@@ -2,10 +2,11 @@ package caddyredis
 
 import (
 	"fmt"
-	"github.com/go-redis/redis/v7"
-	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
 	"strings"
 	"time"
+
+	"github.com/go-redis/redis/v7"
+	. "github.com/journeymidnight/yig-front-caddy/caddyerrors"
 )
 
 type RedisInfo struct {
@@ -16,7 +17,8 @@ type RedisInfo struct {
 }
 
 type Redis struct {
-	single  bool
+	Single  bool
+	Addr    []string
 	client  *SingleRedis
 	cluster *ClusterRedis
 }
@@ -24,21 +26,21 @@ type Redis struct {
 var redisConn Redis
 
 func (r *Redis) PushRequest(data []byte) (err error) {
-	if r.single {
+	if r.Single {
 		return r.client.pushRequest(data)
 	}
 	return r.cluster.pushRequest(data)
 }
 
 func (r *Redis) PopResponse(uuid, url string) (result []byte, err error) {
-	if r.single {
+	if r.Single {
 		return r.client.popResponse(uuid, url)
 	}
 	return r.cluster.popResponse(uuid, url)
 }
 
 func (r *Redis) GetImageFromRedis(url string) (result []byte, err error) {
-	if r.single {
+	if r.Single {
 		return r.client.getImageFromRedis(url)
 	}
 	return r.cluster.getImageFromRedis(url)
@@ -46,13 +48,13 @@ func (r *Redis) GetImageFromRedis(url string) (result []byte, err error) {
 
 func newRedis(info *Config) *Redis {
 	r := new(Redis)
-	fmt.Print("Redis is configured as:", info.Address, len(info.Address) == 1, "\n")
+	r.Addr = info.Address
 	if len(info.Address) == 1 {
-		r.single = true
+		r.Single = true
 		r.client = InitializeSingle(info)
 		return r
 	} else {
-		r.single = false
+		r.Single = false
 		r.cluster = InitializeCluster(info)
 		return r
 	}
