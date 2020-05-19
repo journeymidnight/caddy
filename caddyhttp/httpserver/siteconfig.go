@@ -15,10 +15,10 @@
 package httpserver
 
 import (
-	"github.com/journeymidnight/yig-front-caddy/caddydb"
-	"github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"time"
 
+	"github.com/journeymidnight/yig-front-caddy/caddydb"
+	"github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"github.com/journeymidnight/yig-front-caddy/caddytls"
 )
 

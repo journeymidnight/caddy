@@ -2,10 +2,11 @@ package caddyredis_test
 
 import (
 	"encoding/json"
-	. "github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"strconv"
 	"testing"
 	"time"
+
+	. "github.com/journeymidnight/yig-front-caddy/caddyredis"
 )
 
 type TaskData struct {

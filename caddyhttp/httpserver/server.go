@@ -20,7 +20,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"log"
 	"net"
 	"net/http"
@@ -37,6 +36,7 @@ import (
 	"github.com/journeymidnight/yig-front-caddy/caddydb"
 	"github.com/journeymidnight/yig-front-caddy/caddydb/clients/tidbclient"
 	"github.com/journeymidnight/yig-front-caddy/caddyhttp/staticfiles"
+	"github.com/journeymidnight/yig-front-caddy/caddyredis"
 	"github.com/journeymidnight/yig-front-caddy/caddytls"
 	"github.com/journeymidnight/yig-front-caddy/telemetry"
 	"github.com/lucas-clemente/quic-go/h2quic"
@@ -112,10 +112,22 @@ func NewServer(addr string, group []*SiteConfig) (*Server, error) {
 		Server:      makeHTTPServerWithTimeouts(addr, group),
 		vhosts:      newVHostTrie(),
 		sites:       group,
-		database:    makeDBConfig(group),
-		redis:       makeRedisConfig(group),
 		connTimeout: GracefulTimeout,
 	}
+
+	// Load database configuration
+	clients := makeDBConfig(group)
+	var keys []string
+	for key, _ := range clients {
+		keys = append(keys, key)
+	}
+	fmt.Println("Already loaded database connections:", keys)
+	s.database = clients
+
+	// Load redis configuration
+	redisInfo := makeRedisConfig(group)
+	fmt.Println("Already loaded redis info, is single redis:", redisInfo.Single, "redis address is:", redisInfo.Addr)
+	s.redis = redisInfo
 
 	s.vhosts.fallbackHosts = append(s.vhosts.fallbackHosts, getFallbacks(group)...)
 	s.Server = makeHTTPServerWithHeaderLimit(s.Server, group)
@@ -468,6 +480,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) (int, error) 
 		return http.StatusForbidden, nil
 	}
 
+	// Inject the corresponding global configuration into the request context
 	ctx := context.WithValue(r.Context(), "database", s.database)
 	ctx = context.WithValue(ctx, "redis", s.redis)
 	return vhost.middlewareChain.ServeHTTP(w, r.WithContext(ctx))

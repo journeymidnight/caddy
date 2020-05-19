@@ -2,8 +2,9 @@ package caddyredis
 
 import (
 	"fmt"
-	caddy "github.com/journeymidnight/yig-front-caddy"
 	"strconv"
+
+	caddy "github.com/journeymidnight/yig-front-caddy"
 )
 
 func init() {
